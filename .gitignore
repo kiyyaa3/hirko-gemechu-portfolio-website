@@ -8,6 +8,6 @@ modules/
 server/uploads/*
 !server/uploads/.gitkeep
 npm-debug.log*
-certificate_merged.pdf
-Hirko Gemechu Birdida cv.docx
-logo.png
+/certificate_merged.pdf
+/Hirko Gemechu Birdida cv.docx
+/logo.png
