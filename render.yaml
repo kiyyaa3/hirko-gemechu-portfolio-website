@@ -22,7 +22,7 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: CLIENT_URL
-        value: https://kiyyaa3.github.io/hirko-gemechu-portfolio-website
+        value: https://hirko-gemechu-birdida.netlify.app,https://kiyyaa3.github.io/hirko-gemechu-portfolio-website
       - key: MONGO_TIMEOUT_MS
         value: "10000"
       - key: SMTP_HOST
