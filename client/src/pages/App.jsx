@@ -76,7 +76,7 @@ const fallbackAssets = [
 ];
 
 const heroStats = [
-  { value: "Admin", label: "Project control panel" },
+  { value: "Hirko", label: "Personal project studio" },
   { value: "MERN", label: "Mongo, Express, React, Node" },
   { value: "Upload", label: "Project images supported" }
 ];
@@ -100,7 +100,7 @@ const defaultSite = {
   aboutNote: "The admin can log in, add projects, upload images, edit details, feature projects, and delete old work.",
   highlightTitle: "Why work with me",
   highlightBody: "I combine full-stack development, database design, and practical technical support experience to build useful systems for real workflows.",
-  highlightItems: ["Clean responsive UI", "Admin-managed content", "Practical business systems"],
+  highlightItems: ["Clean responsive UI", "Hirko Gemechu portfolio", "Practical business systems"],
   servicesTitle: "What I can build",
   services: serviceItems,
   skillsTitle: "Practical stack for websites, systems, and support.",
@@ -109,7 +109,7 @@ const defaultSite = {
   experienceBody: "This site already includes project management, image uploads, blog posts, public downloads, testimonials, contact messages, and secure admin login.",
   publicDownloads: fallbackAssets,
   testimonialsTitle: "Testimonials and certificates",
-  projectsTitle: "Admin-managed project showcase",
+  projectsTitle: "Hirko Gemechu project showcase",
   downloadsTitle: "Files shared by admin",
   blogTitle: "Latest updates",
   contactTitle: "Let us talk about your next project.",

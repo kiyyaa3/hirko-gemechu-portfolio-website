@@ -93,7 +93,7 @@ const siteContentSchema = new mongoose.Schema(
     heroStats: {
       type: [statSchema],
       default: [
-        { value: "Admin", label: "Project control panel" },
+        { value: "Hirko", label: "Personal project studio" },
         { value: "MERN", label: "Mongo, Express, React, Node" },
         { value: "Upload", label: "Project images supported" }
       ]
@@ -124,7 +124,7 @@ const siteContentSchema = new mongoose.Schema(
     },
     highlightItems: {
       type: [String],
-      default: ["Clean responsive UI", "Admin-managed content", "Practical business systems"]
+      default: ["Clean responsive UI", "Hirko Gemechu portfolio", "Practical business systems"]
     },
     footerText: {
       type: String,
@@ -194,7 +194,7 @@ const siteContentSchema = new mongoose.Schema(
     },
     projectsTitle: {
       type: String,
-      default: "Admin-managed project showcase"
+      default: "Hirko Gemechu project showcase"
     },
     downloadsTitle: {
       type: String,
