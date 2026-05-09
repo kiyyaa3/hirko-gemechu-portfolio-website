@@ -5,6 +5,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import bcrypt from "bcryptjs";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Admin from "./models/Admin.js";
@@ -84,9 +85,16 @@ app.use("/api/testimonials", testimonialRoutes);
 
 if (process.env.NODE_ENV === "production" && process.env.SERVE_CLIENT !== "false") {
   const clientDist = path.resolve(__dirname, "../../client/dist");
+  const clientIndex = path.join(clientDist, "index.html");
   app.use(express.static(clientDist));
   app.get("*", (_req, res) => {
-    res.sendFile(path.join(clientDist, "index.html"));
+    if (!existsSync(clientIndex)) {
+      return res.status(503).json({
+        message: "Frontend build is missing. Run `npm run build` before starting the production server."
+      });
+    }
+
+    return res.sendFile(clientIndex);
   });
 }
 
