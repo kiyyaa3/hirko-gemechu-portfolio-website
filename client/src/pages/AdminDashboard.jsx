@@ -251,6 +251,7 @@ export default function AdminDashboard() {
       setContent(saved);
       setContentFiles({ heroImage: null, logo: null, downloadFiles: {} });
       setStatus("Website content updated.");
+      await loadAdminData();
     } catch (err) {
       setError(err.message);
     }
@@ -424,6 +425,8 @@ export default function AdminDashboard() {
 
   const newMessageCount = messages.filter((message) => message.status === "new").length;
   const publicAssetCount = assets.filter((asset) => asset.public).length;
+  const heroPreviewUrl = contentFiles.heroImage ? URL.createObjectURL(contentFiles.heroImage) : assetUrl(content?.heroImageUrl);
+  const logoPreviewUrl = contentFiles.logo ? URL.createObjectURL(contentFiles.logo) : assetUrl(content?.logoUrl);
 
   return (
     <main className="admin-page">
@@ -558,12 +561,14 @@ export default function AdminDashboard() {
               </div>
               <div className="media-preview-grid">
                 <article className="media-preview-card">
-                  <span>Current hero image</span>
-                  {content.heroImageUrl ? <img src={assetUrl(content.heroImageUrl)} alt="Current hero" /> : <div className="admin-placeholder">No hero image</div>}
+                  <span>{contentFiles.heroImage ? "Selected hero image" : "Current hero image"}</span>
+                  {heroPreviewUrl ? <img src={heroPreviewUrl} alt="Current hero" /> : <div className="admin-placeholder">No hero image</div>}
+                  <p>{content.heroImageUrl || "No saved hero image URL"}</p>
                 </article>
                 <article className="media-preview-card">
-                  <span>Current logo</span>
-                  {content.logoUrl ? <img src={assetUrl(content.logoUrl)} alt="Current logo" /> : <div className="admin-placeholder">No logo</div>}
+                  <span>{contentFiles.logo ? "Selected logo" : "Current logo"}</span>
+                  {logoPreviewUrl ? <img src={logoPreviewUrl} alt="Current logo" /> : <div className="admin-placeholder">No logo</div>}
+                  <p>{content.logoUrl || "No saved logo URL"}</p>
                 </article>
               </div>
               <div className="admin-subsection">
