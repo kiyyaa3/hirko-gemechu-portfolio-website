@@ -9,6 +9,36 @@ const starterMessages = [
   }
 ];
 
+function fallbackReply(text) {
+  const question = text.toLowerCase();
+
+  if (question.includes("hello") || question.includes("helo") || question.includes("hi")) {
+    return "Hello. I can help you learn about Hirko Gemechu's projects, skills, services, downloads, and contact details.";
+  }
+
+  if (question.includes("service") || question.includes("build") || question.includes("offer")) {
+    return "Hirko Gemechu offers web development, dashboards, portfolio/company sites, business systems, database-backed workflows, and technical support solutions.";
+  }
+
+  if (question.includes("skill") || question.includes("tech")) {
+    return "Hirko works with React, JavaScript, Node.js, Express, MongoDB, PHP, MySQL, REST APIs, responsive UI, dashboards, and support workflows.";
+  }
+
+  if (question.includes("project") || question.includes("work")) {
+    return "Hirko builds responsive websites, dashboards, portfolio systems, and practical business tools. The Projects section shows the latest work.";
+  }
+
+  if (question.includes("contact") || question.includes("email") || question.includes("phone")) {
+    return "You can contact Hirko through the contact form, email button, or phone button on this portfolio.";
+  }
+
+  if (question.includes("download") || question.includes("cv") || question.includes("certificate")) {
+    return "The Downloads section includes Hirko's CV and certificate files when they are published.";
+  }
+
+  return "I can help with Hirko Gemechu's portfolio, projects, skills, services, downloads, and contact details.";
+}
+
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState(starterMessages);
@@ -37,7 +67,7 @@ export default function ChatWidget() {
     } catch (error) {
       setMessages([
         ...nextMessages,
-        { role: "assistant", content: error.message || "Chat is not available right now. Please use the contact form." }
+        { role: "assistant", content: fallbackReply(text) }
       ]);
     } finally {
       setLoading(false);
