@@ -2,6 +2,7 @@ import express from "express";
 import Testimonial from "../models/Testimonial.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { fileUpload } from "../middleware/fileUpload.js";
+import { saveUploadedFile } from "../utils/mediaStore.js";
 
 const router = express.Router();
 
@@ -18,13 +19,14 @@ router.get("/", async (req, res, next) => {
 router.post("/", requireAdmin, fileUpload.single("file"), async (req, res, next) => {
   try {
     const isImage = req.file?.mimetype?.startsWith("image/");
+    const fileUrl = req.file ? await saveUploadedFile(req.file) : "";
     const testimonial = await Testimonial.create({
       name: req.body.name,
       role: req.body.role || "",
       quote: req.body.quote,
       type: req.body.type || "testimonial",
-      imageUrl: isImage ? `/uploads/${req.file.filename}` : "",
-      fileUrl: req.file && !isImage ? `/uploads/${req.file.filename}` : "",
+      imageUrl: isImage ? fileUrl : "",
+      fileUrl: req.file && !isImage ? fileUrl : "",
       public: req.body.public !== "false",
       sortOrder: Number(req.body.sortOrder || 0)
     });
@@ -43,6 +45,7 @@ router.put("/:id", requireAdmin, fileUpload.single("file"), async (req, res, nex
     }
 
     const isImage = req.file?.mimetype?.startsWith("image/");
+    const fileUrl = req.file ? await saveUploadedFile(req.file) : "";
     const testimonial = await Testimonial.findByIdAndUpdate(
       req.params.id,
       {
@@ -50,8 +53,8 @@ router.put("/:id", requireAdmin, fileUpload.single("file"), async (req, res, nex
         role: req.body.role || "",
         quote: req.body.quote,
         type: req.body.type || "testimonial",
-        imageUrl: req.file && isImage ? `/uploads/${req.file.filename}` : existing.imageUrl,
-        fileUrl: req.file && !isImage ? `/uploads/${req.file.filename}` : existing.fileUrl,
+        imageUrl: req.file && isImage ? fileUrl : existing.imageUrl,
+        fileUrl: req.file && !isImage ? fileUrl : existing.fileUrl,
         public: req.body.public === true || req.body.public === "true",
         sortOrder: Number(req.body.sortOrder || 0)
       },

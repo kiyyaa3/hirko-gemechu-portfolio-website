@@ -2,6 +2,7 @@ import express from "express";
 import Project from "../models/Project.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { upload } from "../middleware/upload.js";
+import { saveUploadedFile } from "../utils/mediaStore.js";
 
 const router = express.Router();
 
@@ -36,7 +37,7 @@ router.get("/", async (_req, res, next) => {
 
 router.post("/", requireAdmin, upload.single("image"), async (req, res, next) => {
   try {
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : "";
+    const imageUrl = req.file ? await saveUploadedFile(req.file) : "";
     const project = await Project.create(normalizeProjectPayload(req.body, imageUrl));
     res.status(201).json(project);
   } catch (error) {
@@ -51,7 +52,7 @@ router.put("/:id", requireAdmin, upload.single("image"), async (req, res, next) 
       return res.status(404).json({ message: "Project not found." });
     }
 
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : existing.imageUrl;
+    const imageUrl = req.file ? await saveUploadedFile(req.file) : existing.imageUrl;
     const payload = normalizeProjectPayload(req.body, imageUrl);
     const updated = await Project.findByIdAndUpdate(req.params.id, payload, {
       new: true,

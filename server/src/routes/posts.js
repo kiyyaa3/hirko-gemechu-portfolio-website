@@ -2,6 +2,7 @@ import express from "express";
 import Post from "../models/Post.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { upload } from "../middleware/upload.js";
+import { saveUploadedFile } from "../utils/mediaStore.js";
 
 const router = express.Router();
 
@@ -24,11 +25,12 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", requireAdmin, upload.single("image"), async (req, res, next) => {
   try {
+    const imageUrl = req.file ? await saveUploadedFile(req.file) : "";
     const post = await Post.create({
       title: req.body.title,
       excerpt: req.body.excerpt,
       body: req.body.body,
-      imageUrl: req.file ? `/uploads/${req.file.filename}` : "",
+      imageUrl,
       tags: normalizeTags(req.body.tags),
       published: req.body.published !== "false",
       publishedAt: req.body.publishedAt || Date.now(),
@@ -47,13 +49,14 @@ router.put("/:id", requireAdmin, upload.single("image"), async (req, res, next) 
       return res.status(404).json({ message: "Post not found." });
     }
 
+    const imageUrl = req.file ? await saveUploadedFile(req.file) : existing.imageUrl;
     const post = await Post.findByIdAndUpdate(
       req.params.id,
       {
         title: req.body.title,
         excerpt: req.body.excerpt,
         body: req.body.body,
-        imageUrl: req.file ? `/uploads/${req.file.filename}` : existing.imageUrl,
+        imageUrl,
         tags: normalizeTags(req.body.tags),
         published: req.body.published === true || req.body.published === "true",
         publishedAt: req.body.publishedAt || existing.publishedAt,

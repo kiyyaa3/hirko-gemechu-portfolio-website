@@ -2,6 +2,7 @@ import express from "express";
 import Asset from "../models/Asset.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { fileUpload } from "../middleware/fileUpload.js";
+import { saveUploadedFile } from "../utils/mediaStore.js";
 
 const router = express.Router();
 
@@ -21,11 +22,12 @@ router.post("/", requireAdmin, fileUpload.single("file"), async (req, res, next)
       return res.status(400).json({ message: "A file is required." });
     }
 
+    const fileUrl = await saveUploadedFile(req.file);
     const asset = await Asset.create({
       title: req.body.title,
       description: req.body.description || "",
       category: req.body.category || "Document",
-      fileUrl: `/uploads/${req.file.filename}`,
+      fileUrl,
       fileName: req.file.originalname,
       mimeType: req.file.mimetype,
       size: req.file.size,

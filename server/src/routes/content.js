@@ -2,6 +2,7 @@ import express from "express";
 import SiteContent from "../models/SiteContent.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { fileUpload } from "../middleware/fileUpload.js";
+import { saveUploadedFile } from "../utils/mediaStore.js";
 
 const router = express.Router();
 
@@ -119,20 +120,20 @@ router.put("/", requireAdmin, fileUpload.fields([
     });
 
     if (req.files?.heroImage?.[0]) {
-      content.heroImageUrl = `/uploads/${req.files.heroImage[0].filename}`;
+      content.heroImageUrl = await saveUploadedFile(req.files.heroImage[0]);
     }
 
     if (req.files?.logo?.[0]) {
-      content.logoUrl = `/uploads/${req.files.logo[0].filename}`;
+      content.logoUrl = await saveUploadedFile(req.files.logo[0]);
     }
 
     const downloads = [...(content.publicDownloads || [])];
-    downloads.forEach((download, index) => {
+    for (const [index, download] of downloads.entries()) {
       const file = req.files?.[`downloadFile${index}`]?.[0];
       if (file) {
-        download.fileUrl = `/uploads/${file.filename}`;
+        download.fileUrl = await saveUploadedFile(file);
       }
-    });
+    }
     content.publicDownloads = downloads;
 
     await content.save();
