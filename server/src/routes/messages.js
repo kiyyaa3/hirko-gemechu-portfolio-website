@@ -5,6 +5,21 @@ import { sendContactNotification } from "../services/email.js";
 
 const router = express.Router();
 
+function publicEmailError(errorMessage = "") {
+  const message = String(errorMessage);
+  if (!message) return "Unknown email notification error.";
+  if (message.toLowerCase().includes("invalid login") || message.includes("535")) {
+    return "Gmail rejected the SMTP login. Check SMTP_USER and SMTP_PASS app password in Render.";
+  }
+  if (message.toLowerCase().includes("timeout") || message.includes("ETIMEDOUT")) {
+    return "Render could not connect to Gmail SMTP before timeout.";
+  }
+  if (message.includes("ECONNREFUSED")) {
+    return "Gmail SMTP connection was refused from Render.";
+  }
+  return message.slice(0, 240);
+}
+
 router.post("/", async (req, res, next) => {
   try {
     const { name, email, phone, subject, message } = req.body;
@@ -20,7 +35,7 @@ router.post("/", async (req, res, next) => {
       emailStatus = await sendContactNotification(contactMessage);
     } catch (error) {
       console.error("Email notification failed:", error.message);
-      emailStatus = { sent: false, error: error.message };
+      emailStatus = { sent: false, error: publicEmailError(error.message) };
     }
 
     res.status(201).json({
@@ -28,7 +43,8 @@ router.post("/", async (req, res, next) => {
         ? "Contact request received and email notification sent."
         : "Contact request received, but email notification was not sent. Check SMTP settings.",
       id: contactMessage._id,
-      emailSent: Boolean(emailStatus.sent)
+      emailSent: Boolean(emailStatus.sent),
+      ...(emailStatus.error ? { emailError: emailStatus.error } : {})
     });
   } catch (error) {
     next(error);
