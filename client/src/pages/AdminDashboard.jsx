@@ -15,6 +15,7 @@ import {
   Trash2
 } from "lucide-react";
 import { authHeaders, apiRequest, assetUrl } from "../lib/api.js";
+import ChatWidget from "../components/ChatWidget.jsx";
 
 const emptyProjectForm = {
   title: "",
@@ -1203,6 +1204,7 @@ export default function AdminDashboard() {
           )}
         </section>
       </section>
+      <ChatWidget />
     </main>
   );
 }

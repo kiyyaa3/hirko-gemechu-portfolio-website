@@ -27,6 +27,10 @@ services:
         value: https://hirko-gemechu-birdida.netlify.app,https://kiyyaa3.github.io/hirko-gemechu-portfolio-website
       - key: MONGO_TIMEOUT_MS
         value: "10000"
+      - key: OLLAMA_BASE_URL
+        sync: false
+      - key: OLLAMA_MODEL
+        value: llama3.1
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Award, Briefcase, Code2, Database, Download, ExternalLink, FileText, Globe2, Laptop, Mail, MapPin, Newspaper, Phone, Server, ShieldCheck, Wrench } from "lucide-react";
 import Header from "../components/Header.jsx";
+import ChatWidget from "../components/ChatWidget.jsx";
 import { apiRequest, assetUrl } from "../lib/api.js";
 
 const fallbackProjects = [
@@ -150,6 +151,7 @@ export default function App() {
   }, []);
 
   const site = { ...defaultSite, ...(content || {}) };
+  const heroImage = assetUrl(site.heroImageUrl || defaultSite.heroImageUrl);
   const visibleProjects = projects.length ? projects : fallbackProjects;
   const contentDownloads = site.publicDownloads?.length ? site.publicDownloads : fallbackAssets;
   const publicAssets = [
@@ -195,7 +197,14 @@ export default function App() {
               </div>
             </div>
             <div className="hero-card">
-              <img src={assetUrl(site.heroImageUrl)} alt="Hirko Gemechu" />
+              <img
+                src={heroImage}
+                alt="Hirko Gemechu"
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = assetUrl(defaultSite.heroImageUrl);
+                }}
+              />
                 <div className="availability"><span></span> {site.availabilityText || site.headerTitle}</div>
             </div>
           </div>
@@ -419,6 +428,7 @@ export default function App() {
           <Link to="/admin/login">Hirko Login</Link>
         </div>
       </footer>
+      <ChatWidget />
     </>
   );
 }

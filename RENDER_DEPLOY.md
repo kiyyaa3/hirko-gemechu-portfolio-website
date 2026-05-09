@@ -24,6 +24,8 @@ SMTP_FROM
 NOTIFY_EMAIL
 SERVE_CLIENT
 RATE_LIMIT_MAX
+OLLAMA_BASE_URL
+OLLAMA_MODEL
 ```
 
 Render will generate `JWT_SECRET` from the Blueprint.
@@ -39,6 +41,10 @@ Render will generate `JWT_SECRET` from the Blueprint.
 - `CLIENT_URL`: your frontend URL after Netlify deploy, for example `https://your-site.netlify.app`
 - `SERVE_CLIENT`: `false`
 - `RATE_LIMIT_MAX`: `1000`
+- `OLLAMA_BASE_URL`: your Ollama server URL, for example `https://your-ollama-host.example.com`
+- `OLLAMA_MODEL`: the installed Ollama model name, for example `llama3.1`
+
+If Ollama is not reachable, `/api/chat` still returns helpful portfolio fallback answers instead of failing.
 
 ## Commands Render Runs
 

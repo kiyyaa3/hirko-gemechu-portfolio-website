@@ -10,6 +10,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Admin from "./models/Admin.js";
 import authRoutes from "./routes/auth.js";
+import chatRoutes from "./routes/chat.js";
 import projectRoutes from "./routes/projects.js";
 import contentRoutes from "./routes/content.js";
 import assetRoutes from "./routes/assets.js";
@@ -93,6 +94,7 @@ app.use("/api", (req, res, next) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/chat", chatRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/content", contentRoutes);
 app.use("/api/assets", assetRoutes);

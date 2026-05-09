@@ -79,6 +79,15 @@ body::before {
   pointer-events: none;
 }
 
+main,
+.site-header,
+.site-footer,
+.chat-widget,
+.admin-page {
+  position: relative;
+  z-index: 1;
+}
+
 .nav,
 .footer-content,
 .admin-topbar,
@@ -160,7 +169,10 @@ body::before {
 .hero {
   position: relative;
   overflow: hidden;
-  padding: 96px 0 84px;
+  min-height: calc(100vh - 76px);
+  padding: 90px 0 72px;
+  display: grid;
+  align-items: center;
 }
 
 .hero-grid,
@@ -329,15 +341,20 @@ h3 {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  background: var(--surface);
+  box-shadow: 0 28px 70px rgba(20, 33, 61, 0.2);
+  border: 8px solid #ffffff;
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(217, 119, 6, 0.14)),
+    var(--surface);
 }
 
 .hero-card img {
   width: 100%;
-  height: 520px;
+  min-height: 520px;
+  height: clamp(520px, 62vh, 700px);
   object-fit: cover;
+  object-position: center top;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.18), rgba(217, 119, 6, 0.18));
 }
 
 .hero-card::after {
@@ -791,9 +808,12 @@ select:focus {
   max-width: 1320px;
   margin: 0 auto 26px;
   padding: 28px;
-  background: var(--surface);
+  background:
+    linear-gradient(135deg, rgba(15, 118, 110, 0.09), rgba(217, 119, 6, 0.1)),
+    var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  box-shadow: 0 18px 50px rgba(20, 33, 61, 0.1);
 }
 
 .admin-summary,
@@ -852,8 +872,9 @@ select:focus {
 
 .admin-nav-chip.active,
 .admin-nav-chip:hover {
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(217, 119, 6, 0.12));
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.16), rgba(217, 119, 6, 0.14));
   color: var(--primary-dark);
+  border-color: rgba(15, 118, 110, 0.26);
 }
 
 .admin-feedback {
@@ -898,11 +919,12 @@ select:focus {
 
 .admin-form,
 .admin-list {
-  padding: 24px;
+  padding: 28px;
 }
 
 .admin-panel {
   backdrop-filter: blur(12px);
+  box-shadow: 0 18px 48px rgba(20, 33, 61, 0.1);
 }
 
 .form-heading {
@@ -959,9 +981,11 @@ select:focus {
 
 .media-preview-card img {
   width: 100%;
-  height: 180px;
+  height: 230px;
   border-radius: var(--radius);
   object-fit: cover;
+  object-position: center top;
+  background: var(--surface-strong);
 }
 
 .two-fields {
@@ -1078,6 +1102,149 @@ select:focus {
   color: var(--muted);
 }
 
+.chat-widget {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 50;
+  display: grid;
+  justify-items: end;
+  gap: 14px;
+}
+
+.chat-fab {
+  width: 58px;
+  height: 58px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 118, 110, 0.32);
+  cursor: pointer;
+}
+
+.chat-panel {
+  width: min(390px, calc(100vw - 32px));
+  overflow: hidden;
+  border: 1px solid rgba(220, 230, 237, 0.9);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 24px 70px rgba(20, 33, 61, 0.24);
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, #0f766e, #14213d);
+  color: #ffffff;
+}
+
+.chat-head span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.chat-head p {
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.86rem;
+}
+
+.chat-head button,
+.chat-form button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.chat-head button {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.chat-messages {
+  display: grid;
+  max-height: 360px;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 16px;
+  background: #f8fbfd;
+}
+
+.chat-bubble {
+  width: fit-content;
+  max-width: 88%;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+
+.chat-bubble.assistant {
+  justify-self: start;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.chat-bubble.user {
+  justify-self: end;
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.chat-bubble.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.chat-bubble.loading svg {
+  animation: spin 0.9s linear infinite;
+}
+
+.chat-form {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  gap: 10px;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.chat-form input {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.chat-form button {
+  height: 44px;
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.chat-form button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 980px) {
   .nav-toggle {
     display: inline-flex;
@@ -1156,7 +1323,13 @@ select:focus {
   }
 
   .hero-card img {
-    height: 340px;
+    min-height: 340px;
+    height: 420px;
+  }
+
+  .chat-widget {
+    right: 14px;
+    bottom: 14px;
   }
 
   .hero-actions .btn,
