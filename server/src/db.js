@@ -11,9 +11,15 @@ export async function connectDb() {
   }
 
   mongoose.set("strictQuery", true);
-  await mongoose.connect(mongoUri, {
+  const connectOptions = {
     serverSelectionTimeoutMS: Number(process.env.MONGO_TIMEOUT_MS || 10000)
-  });
+  };
+
+  if (mongoUri.startsWith("mongodb+srv://")) {
+    connectOptions.tls = true;
+  }
+
+  await mongoose.connect(mongoUri, connectOptions);
   databaseReady = true;
   databaseError = null;
   console.log("MongoDB connected");

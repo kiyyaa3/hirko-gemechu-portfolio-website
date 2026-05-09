@@ -9,6 +9,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: "20.11.0"
       - key: SERVE_CLIENT
         value: "false"
       - key: RATE_LIMIT_MAX
