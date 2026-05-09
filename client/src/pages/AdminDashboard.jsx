@@ -203,11 +203,19 @@ export default function AdminDashboard() {
         "headerSubtitle",
         "heroTitle",
         "heroBody",
+        "announcementText",
+        "primaryButtonLabel",
+        "primaryButtonUrl",
+        "secondaryButtonLabel",
+        "secondaryButtonUrl",
+        "availabilityText",
         "heroImageUrl",
         "logoUrl",
         "aboutTitle",
         "aboutBody",
         "aboutNote",
+        "highlightTitle",
+        "highlightBody",
         "servicesTitle",
         "skillsTitle",
         "experienceTitle",
@@ -224,7 +232,7 @@ export default function AdminDashboard() {
         "location"
       ].forEach((field) => payload.append(field, content[field] || ""));
 
-      ["links", "heroStats", "services", "skillGroups", "publicDownloads"].forEach((field) => {
+      ["links", "heroStats", "services", "skillGroups", "publicDownloads", "highlightItems"].forEach((field) => {
         payload.append(field, JSON.stringify(content[field] || []));
       });
 
@@ -489,6 +497,33 @@ export default function AdminDashboard() {
               <input value={content.heroTitle || ""} onChange={(event) => setContent({ ...content, heroTitle: event.target.value })} />
               <label>Hero Body</label>
               <textarea rows="4" value={content.heroBody || ""} onChange={(event) => setContent({ ...content, heroBody: event.target.value })} />
+              <label>Announcement Banner</label>
+              <input value={content.announcementText || ""} onChange={(event) => setContent({ ...content, announcementText: event.target.value })} />
+              <label>Availability Text</label>
+              <input value={content.availabilityText || ""} onChange={(event) => setContent({ ...content, availabilityText: event.target.value })} />
+              <div className="admin-subsection">
+                <h3>Hero Buttons</h3>
+                <div className="two-fields">
+                  <div>
+                    <label>Primary Button Label</label>
+                    <input value={content.primaryButtonLabel || ""} onChange={(event) => setContent({ ...content, primaryButtonLabel: event.target.value })} />
+                  </div>
+                  <div>
+                    <label>Primary Button URL</label>
+                    <input value={content.primaryButtonUrl || ""} onChange={(event) => setContent({ ...content, primaryButtonUrl: event.target.value })} placeholder="#projects or https://..." />
+                  </div>
+                </div>
+                <div className="two-fields">
+                  <div>
+                    <label>Secondary Button Label</label>
+                    <input value={content.secondaryButtonLabel || ""} onChange={(event) => setContent({ ...content, secondaryButtonLabel: event.target.value })} />
+                  </div>
+                  <div>
+                    <label>Secondary Button URL</label>
+                    <input value={content.secondaryButtonUrl || ""} onChange={(event) => setContent({ ...content, secondaryButtonUrl: event.target.value })} placeholder="#contact or https://..." />
+                  </div>
+                </div>
+              </div>
               <div className="two-fields">
                 <div>
                   <label>Hero Image URL</label>
@@ -564,6 +599,22 @@ export default function AdminDashboard() {
               <textarea rows="4" value={content.aboutBody || ""} onChange={(event) => setContent({ ...content, aboutBody: event.target.value })} />
               <label>About Second Paragraph</label>
               <textarea rows="3" value={content.aboutNote || ""} onChange={(event) => setContent({ ...content, aboutNote: event.target.value })} />
+              <div className="admin-subsection">
+                <h3>Featured Highlight</h3>
+                <label>Highlight Title</label>
+                <input value={content.highlightTitle || ""} onChange={(event) => setContent({ ...content, highlightTitle: event.target.value })} />
+                <label>Highlight Body</label>
+                <textarea rows="3" value={content.highlightBody || ""} onChange={(event) => setContent({ ...content, highlightBody: event.target.value })} />
+                <label>Highlight Items, comma separated</label>
+                <input
+                  value={(content.highlightItems || []).join(", ")}
+                  onChange={(event) => setContent({
+                    ...content,
+                    highlightItems: event.target.value.split(",").map((item) => item.trim()).filter(Boolean)
+                  })}
+                  placeholder="Fast delivery, Clean UI, Reliable support"
+                />
+              </div>
               <div className="admin-subsection">
                 <h3>Services</h3>
                 <label>Services Section Title</label>

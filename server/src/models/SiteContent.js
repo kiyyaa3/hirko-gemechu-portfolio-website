@@ -62,6 +62,30 @@ const siteContentSchema = new mongoose.Schema(
       type: String,
       default: "I build practical full-stack products that look professional and are easy to manage."
     },
+    announcementText: {
+      type: String,
+      default: "Available for freelance projects, internships, and full-time software roles."
+    },
+    primaryButtonLabel: {
+      type: String,
+      default: "View Projects"
+    },
+    primaryButtonUrl: {
+      type: String,
+      default: "#projects"
+    },
+    secondaryButtonLabel: {
+      type: String,
+      default: "Contact Me"
+    },
+    secondaryButtonUrl: {
+      type: String,
+      default: "#contact"
+    },
+    availabilityText: {
+      type: String,
+      default: "Open to work"
+    },
     heroImageUrl: {
       type: String,
       default: "/starter/hirko-optimized.jpg"
@@ -89,6 +113,18 @@ const siteContentSchema = new mongoose.Schema(
     aboutNote: {
       type: String,
       default: "The admin can log in, add projects, upload images, edit details, feature projects, and delete old work."
+    },
+    highlightTitle: {
+      type: String,
+      default: "Why work with me"
+    },
+    highlightBody: {
+      type: String,
+      default: "I combine full-stack development, database design, and practical technical support experience to build useful systems for real workflows."
+    },
+    highlightItems: {
+      type: [String],
+      default: ["Clean responsive UI", "Admin-managed content", "Practical business systems"]
     },
     footerText: {
       type: String,

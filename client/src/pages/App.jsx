@@ -86,12 +86,21 @@ const defaultSite = {
   headerSubtitle: "MERN Developer | Software Engineer",
   heroTitle: "Building clean websites, dashboards, and business systems.",
   heroBody: "I build practical full-stack products that look professional and are easy to manage.",
+  announcementText: "Available for freelance projects, internships, and full-time software roles.",
+  primaryButtonLabel: "View Projects",
+  primaryButtonUrl: "#projects",
+  secondaryButtonLabel: "Contact Me",
+  secondaryButtonUrl: "#contact",
+  availabilityText: "Open to work",
   heroImageUrl: "/starter/hirko-optimized.jpg",
   heroStats,
   logoUrl: "/starter/logo.png",
   aboutTitle: "Full-stack development with practical support experience.",
   aboutBody: "I build responsive websites, business systems, admin dashboards, and technical support solutions.",
   aboutNote: "The admin can log in, add projects, upload images, edit details, feature projects, and delete old work.",
+  highlightTitle: "Why work with me",
+  highlightBody: "I combine full-stack development, database design, and practical technical support experience to build useful systems for real workflows.",
+  highlightItems: ["Clean responsive UI", "Admin-managed content", "Practical business systems"],
   servicesTitle: "What I can build",
   services: serviceItems,
   skillsTitle: "Practical stack for websites, systems, and support.",
@@ -171,12 +180,13 @@ export default function App() {
         <section className="hero" id="home">
           <div className="container hero-grid">
             <div className="hero-copy">
+              {site.announcementText ? <div className="announcement-bar">{site.announcementText}</div> : null}
               <p className="eyebrow">{site.headerSubtitle}</p>
               <h1>{site.heroTitle}</h1>
               <p className="hero-text">{site.heroBody}</p>
               <div className="hero-actions">
-                <a className="btn primary" href="#projects"><Briefcase size={18} /> View Projects</a>
-                <a className="btn secondary" href="#contact"><Mail size={18} /> Contact Me</a>
+                <a className="btn primary" href={site.primaryButtonUrl || "#projects"}><Briefcase size={18} /> {site.primaryButtonLabel || "View Projects"}</a>
+                <a className="btn secondary" href={site.secondaryButtonUrl || "#contact"}><Mail size={18} /> {site.secondaryButtonLabel || "Contact Me"}</a>
               </div>
               <div className="hero-stats">
                 {(site.heroStats?.length ? site.heroStats : heroStats).slice(0, 3).map((stat) => (
@@ -186,7 +196,7 @@ export default function App() {
             </div>
             <div className="hero-card">
               <img src={assetUrl(site.heroImageUrl)} alt="Hirko Gemechu" />
-                <div className="availability"><span></span> {site.headerTitle}</div>
+                <div className="availability"><span></span> {site.availabilityText || site.headerTitle}</div>
             </div>
           </div>
         </section>
@@ -202,6 +212,18 @@ export default function App() {
               <p>{site.aboutNote}</p>
             </div>
           </div>
+          {(site.highlightTitle || site.highlightBody || site.highlightItems?.length) ? (
+            <div className="container highlight-panel">
+              <div>
+                <p className="eyebrow">Highlight</p>
+                <h3>{site.highlightTitle}</h3>
+                <p>{site.highlightBody}</p>
+              </div>
+              <div className="highlight-list">
+                {(site.highlightItems || []).filter(Boolean).map((item) => <span key={item}>{item}</span>)}
+              </div>
+            </div>
+          ) : null}
         </section>
 
         <section className="section muted">

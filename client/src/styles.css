@@ -184,6 +184,18 @@ body::before {
   text-transform: uppercase;
 }
 
+.announcement-bar {
+  width: fit-content;
+  max-width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--primary-dark);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
 h1 {
   max-width: 860px;
   font-size: clamp(2.35rem, 5vw, 4.7rem);
@@ -337,6 +349,40 @@ h3 {
   flex: 0 0 auto;
   border-radius: 999px;
   background: #22c55e;
+}
+
+.highlight-panel {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 24px;
+  align-items: center;
+  margin-top: 42px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 10px 30px rgba(20, 33, 61, 0.07);
+}
+
+.highlight-panel p {
+  color: var(--muted);
+}
+
+.highlight-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.highlight-list span {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  padding: 0 13px;
+  border-radius: var(--radius);
+  background: rgba(217, 119, 6, 0.11);
+  color: #8a4b05;
+  font-weight: 800;
 }
 
 .section {
@@ -1014,6 +1060,7 @@ select:focus {
 
   .hero-grid,
   .split,
+  .highlight-panel,
   .contact-strip,
   .contact-grid-public,
   .skills-layout,

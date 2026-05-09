@@ -13,9 +13,18 @@ async function getContentDocument() {
   const defaults = new SiteContent();
   [
     "heroImageUrl",
+    "announcementText",
+    "primaryButtonLabel",
+    "primaryButtonUrl",
+    "secondaryButtonLabel",
+    "secondaryButtonUrl",
+    "availabilityText",
     "heroStats",
     "logoUrl",
     "aboutNote",
+    "highlightTitle",
+    "highlightBody",
+    "highlightItems",
     "servicesTitle",
     "services",
     "skillsTitle",
@@ -57,7 +66,7 @@ router.put("/", requireAdmin, fileUpload.fields([
     const content = await getContentDocument();
     const body = { ...req.body };
 
-    ["links", "heroStats", "services", "skillGroups", "publicDownloads"].forEach((field) => {
+    ["links", "heroStats", "services", "skillGroups", "publicDownloads", "highlightItems"].forEach((field) => {
       if (typeof body[field] === "string") {
         body[field] = JSON.parse(body[field]);
       }
@@ -69,11 +78,20 @@ router.put("/", requireAdmin, fileUpload.fields([
       "heroTitle",
       "heroBody",
       "heroImageUrl",
+      "announcementText",
+      "primaryButtonLabel",
+      "primaryButtonUrl",
+      "secondaryButtonLabel",
+      "secondaryButtonUrl",
+      "availabilityText",
       "heroStats",
       "logoUrl",
       "aboutTitle",
       "aboutBody",
       "aboutNote",
+      "highlightTitle",
+      "highlightBody",
+      "highlightItems",
       "servicesTitle",
       "services",
       "skillsTitle",
