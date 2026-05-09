@@ -94,20 +94,31 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 
-if (process.env.NODE_ENV === "production" && process.env.SERVE_CLIENT !== "false") {
-  const clientDist = path.resolve(__dirname, "../../client/dist");
-  const clientIndex = path.join(clientDist, "index.html");
+const clientDist = path.resolve(__dirname, "../../client/dist");
+const clientIndex = path.join(clientDist, "index.html");
+const shouldServeClient = process.env.NODE_ENV === "production"
+  && process.env.SERVE_CLIENT === "true"
+  && existsSync(clientIndex);
+
+if (shouldServeClient) {
   app.use(express.static(clientDist));
   app.get("*", (_req, res) => {
-    if (!existsSync(clientIndex)) {
-      return res.status(503).json({
-        message: "Frontend build is missing. Run `npm run build` before starting the production server."
-      });
-    }
-
     return res.sendFile(clientIndex);
   });
 }
+
+if (process.env.NODE_ENV === "production" && process.env.SERVE_CLIENT === "true" && !existsSync(clientIndex)) {
+  console.warn("SERVE_CLIENT=true but client/dist/index.html is missing. Running API-only mode.");
+}
+
+app.get("/", (_req, res) => {
+  res.json({
+    status: "ok",
+    app: "hirko-portfolio-api",
+    frontend: process.env.CLIENT_URL || "Deploy the frontend on Netlify.",
+    health: "/api/health"
+  });
+});
 
 app.use((error, _req, res, _next) => {
   console.error(error);
