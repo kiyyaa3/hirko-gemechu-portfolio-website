@@ -164,11 +164,13 @@ export default function App() {
     setMessageStatus("Sending...");
 
     try {
-      await apiRequest("/api/messages", {
+      const response = await apiRequest("/api/messages", {
         method: "POST",
         body: JSON.stringify(messageForm)
       });
-      setMessageStatus("Thank you. Your message was sent to Hirko Gemechu.");
+      setMessageStatus(response.emailSent
+        ? "Thank you. Your message was sent to Hirko Gemechu by email."
+        : "Thank you. Your message was saved. Email notification needs SMTP settings checked.");
       setMessageForm({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (error) {
       setMessageStatus(error.message);

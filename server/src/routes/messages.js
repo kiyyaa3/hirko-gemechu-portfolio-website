@@ -14,10 +14,22 @@ router.post("/", async (req, res, next) => {
     }
 
     const contactMessage = await Message.create({ name, email, phone, subject, message });
-    sendContactNotification(contactMessage).catch((error) => {
+    let emailStatus = { sent: false };
+
+    try {
+      emailStatus = await sendContactNotification(contactMessage);
+    } catch (error) {
       console.error("Email notification failed:", error.message);
+      emailStatus = { sent: false, error: error.message };
+    }
+
+    res.status(201).json({
+      message: emailStatus.sent
+        ? "Contact request received and email notification sent."
+        : "Contact request received, but email notification was not sent. Check SMTP settings.",
+      id: contactMessage._id,
+      emailSent: Boolean(emailStatus.sent)
     });
-    res.status(201).json({ message: "Contact request received.", id: contactMessage._id });
   } catch (error) {
     next(error);
   }
