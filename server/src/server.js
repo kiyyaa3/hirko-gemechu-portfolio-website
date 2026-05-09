@@ -4,8 +4,10 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import bcrypt from "bcryptjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import Admin from "./models/Admin.js";
 import authRoutes from "./routes/auth.js";
 import projectRoutes from "./routes/projects.js";
 import contentRoutes from "./routes/content.js";
@@ -13,16 +15,25 @@ import assetRoutes from "./routes/assets.js";
 import messageRoutes from "./routes/messages.js";
 import postRoutes from "./routes/posts.js";
 import testimonialRoutes from "./routes/testimonials.js";
-import { connectDb } from "./db.js";
+import { connectDb, getDatabaseStatus, isDatabaseReady } from "./db.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 5000;
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const defaultOrigins = [
+  "http://localhost:5173",
+  "https://kiyyaa3.github.io",
+  "https://kiyyaa3.github.io/hirko-gemechu-portfolio-website",
+  "https://hirko-gemechu-portfolio-website.onrender.com"
+];
+const allowedOrigins = [
+  ...defaultOrigins,
+  ...(process.env.CLIENT_URL || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+];
 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
@@ -49,7 +60,18 @@ app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
 app.use("/starter", express.static(path.resolve(__dirname, "../../client/public/starter")));
 
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", app: "hirko-portfolio-api" });
+  res.json({ status: "ok", app: "hirko-portfolio-api", database: getDatabaseStatus() });
+});
+
+app.use("/api", (req, res, next) => {
+  if (req.path === "/health" || isDatabaseReady()) {
+    return next();
+  }
+
+  return res.status(503).json({
+    message: "Database is not connected. Check MONGO_URI in Render environment variables.",
+    database: getDatabaseStatus()
+  });
 });
 
 app.use("/api/auth", authRoutes);
@@ -74,14 +96,29 @@ app.use((error, _req, res, _next) => {
   res.status(error.status || 500).json({ message });
 });
 
-connectDb()
-  .then(() => {
-    app.listen(port, () => {
-      console.log(`API running on http://localhost:${port}`);
-    });
-  })
-  .catch((error) => {
-    console.error("Failed to start server");
-    console.error(error);
-    process.exit(1);
-  });
+app.listen(port, () => {
+  console.log(`API running on http://localhost:${port}`);
+});
+
+async function ensureAdminAccount() {
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    console.warn("ADMIN_EMAIL or ADMIN_PASSWORD is missing. Admin account was not seeded.");
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  await Admin.findOneAndUpdate(
+    { email: email.toLowerCase() },
+    { name: "Hirko Admin", email: email.toLowerCase(), passwordHash },
+    { upsert: true, new: true }
+  );
+  console.log(`Admin ready: ${email.toLowerCase()}`);
+}
+
+connectDb().then(ensureAdminAccount).catch((error) => {
+  console.error("Database connection failed");
+  console.error(error);
+});
