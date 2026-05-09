@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 let databaseReady = false;
 let databaseError = null;
+let databaseHost = null;
 
 export async function connectDb() {
   const mongoUri = process.env.MONGO_URI;
@@ -10,6 +11,7 @@ export async function connectDb() {
     throw new Error("MONGO_URI is missing. Add it to your .env file.");
   }
 
+  databaseHost = getMongoHost(mongoUri);
   mongoose.set("strictQuery", true);
   const connectOptions = {
     serverSelectionTimeoutMS: Number(process.env.MONGO_TIMEOUT_MS || 10000)
@@ -42,6 +44,16 @@ export function getDatabaseStatus() {
   return {
     ready: databaseReady,
     state: mongoose.connection.readyState,
+    host: databaseHost,
     error: databaseError?.message || null
   };
+}
+
+function getMongoHost(mongoUri) {
+  try {
+    const parsed = new URL(mongoUri);
+    return parsed.host;
+  } catch {
+    return null;
+  }
 }

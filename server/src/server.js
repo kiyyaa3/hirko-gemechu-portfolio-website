@@ -72,7 +72,12 @@ app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
 app.use("/starter", express.static(path.resolve(__dirname, "../../client/public/starter")));
 
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", app: "hirko-portfolio-api", database: getDatabaseStatus() });
+  res.json({
+    status: "ok",
+    app: "hirko-portfolio-api",
+    node: process.version,
+    database: getDatabaseStatus()
+  });
 });
 
 app.use("/api", (req, res, next) => {
