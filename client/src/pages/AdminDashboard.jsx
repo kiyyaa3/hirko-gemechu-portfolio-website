@@ -540,7 +540,7 @@ export default function AdminDashboard() {
               <div className="two-fields">
                 <label className="upload-box">
                   <LayoutTemplate size={22} />
-                  <span>{contentFiles.heroImage ? contentFiles.heroImage.name : "Upload new hero image"}</span>
+                  <span>{contentFiles.heroImage ? `Ready to publish: ${contentFiles.heroImage.name}` : "Upload new hero image"}</span>
                   <input
                     name="heroImage"
                     type="file"
@@ -550,7 +550,7 @@ export default function AdminDashboard() {
                 </label>
                 <label className="upload-box">
                   <LayoutTemplate size={22} />
-                  <span>{contentFiles.logo ? contentFiles.logo.name : "Upload new logo"}</span>
+                  <span>{contentFiles.logo ? `Ready to publish: ${contentFiles.logo.name}` : "Upload new logo"}</span>
                   <input
                     name="logo"
                     type="file"
@@ -563,12 +563,12 @@ export default function AdminDashboard() {
                 <article className="media-preview-card">
                   <span>{contentFiles.heroImage ? "Selected hero image" : "Current hero image"}</span>
                   {heroPreviewUrl ? <img src={heroPreviewUrl} alt="Current hero" /> : <div className="admin-placeholder">No hero image</div>}
-                  <p>{content.heroImageUrl || "No saved hero image URL"}</p>
+                  <p>{contentFiles.heroImage ? "Click Save & Publish Content to update the Hero Image URL." : (content.heroImageUrl || "No saved hero image URL")}</p>
                 </article>
                 <article className="media-preview-card">
                   <span>{contentFiles.logo ? "Selected logo" : "Current logo"}</span>
                   {logoPreviewUrl ? <img src={logoPreviewUrl} alt="Current logo" /> : <div className="admin-placeholder">No logo</div>}
-                  <p>{content.logoUrl || "No saved logo URL"}</p>
+                  <p>{contentFiles.logo ? "Click Save & Publish Content to update the Logo URL." : (content.logoUrl || "No saved logo URL")}</p>
                 </article>
               </div>
               <div className="admin-subsection">
@@ -853,7 +853,7 @@ export default function AdminDashboard() {
               ))}
               <div className="form-buttons">
                 <button className="btn secondary" type="button" onClick={() => setContent({ ...content, links: [...(content.links || []), { label: "", url: "" }] })}>Add Link</button>
-                <button className="btn primary" type="submit"><Save size={16} /> Save Content</button>
+                <button className="btn primary" type="submit"><Save size={16} /> Save & Publish Content</button>
               </div>
             </form>
           ) : null}
