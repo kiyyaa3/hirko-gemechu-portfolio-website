@@ -108,11 +108,11 @@ const siteContentSchema = new mongoose.Schema(
     },
     aboutBody: {
       type: String,
-      default: "I build responsive websites, business systems, admin dashboards, and technical support solutions."
+      default: "I build responsive websites, business systems, dashboards, and technical support solutions."
     },
     aboutNote: {
       type: String,
-      default: "The admin can log in, add projects, upload images, edit details, feature projects, and delete old work."
+      default: "Hirko Gemechu can keep projects, images, files, blog posts, and website details fresh from one dashboard."
     },
     highlightTitle: {
       type: String,
@@ -157,7 +157,7 @@ const siteContentSchema = new mongoose.Schema(
       type: [serviceSchema],
       default: [
         { title: "Web Development", description: "Modern responsive websites, landing pages, portfolios, and company sites.", icon: "Laptop" },
-        { title: "Business Systems", description: "Inventory, schedules, dashboards, reporting, and admin workflows.", icon: "Database" },
+        { title: "Business Systems", description: "Inventory, schedules, dashboards, reporting, and practical content workflows.", icon: "Database" },
         { title: "Technical Support", description: "System support, troubleshooting, CCTV systems, and operational documentation.", icon: "ShieldCheck" }
       ]
     },
@@ -170,16 +170,16 @@ const siteContentSchema = new mongoose.Schema(
       default: [
         { title: "Frontend", icon: "Code2", items: ["React", "JavaScript", "Responsive UI", "Bootstrap", "WordPress"] },
         { title: "Backend", icon: "Server", items: ["Node.js", "Express", "PHP", "REST APIs", "Authentication"] },
-        { title: "Data & Support", icon: "Wrench", items: ["MongoDB", "MySQL", "Admin dashboards", "CCTV support", "Troubleshooting"] }
+        { title: "Data & Support", icon: "Wrench", items: ["MongoDB", "MySQL", "Dashboards", "CCTV support", "Troubleshooting"] }
       ]
     },
     experienceTitle: {
       type: String,
-      default: "MERN portfolio CMS with admin control"
+      default: "MERN portfolio CMS for Hirko Gemechu"
     },
     experienceBody: {
       type: String,
-      default: "This site includes project management, image uploads, blog posts, public downloads, testimonials, contact messages, and secure admin login."
+      default: "This site includes project management, image uploads, blog posts, public downloads, testimonials, contact messages, and secure dashboard access."
     },
     publicDownloads: {
       type: [downloadSchema],
@@ -198,7 +198,7 @@ const siteContentSchema = new mongoose.Schema(
     },
     downloadsTitle: {
       type: String,
-      default: "Files shared by admin"
+      default: "Files shared by Hirko Gemechu"
     },
     blogTitle: {
       type: String,

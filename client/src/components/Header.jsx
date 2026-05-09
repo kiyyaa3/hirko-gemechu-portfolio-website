@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Menu, ShieldCheck, X } from "lucide-react";
+import { Menu, UserRound, X } from "lucide-react";
 import { useState } from "react";
 
 export default function Header({ logoUrl = "/starter/logo.png" }) {
@@ -24,7 +24,7 @@ export default function Header({ logoUrl = "/starter/logo.png" }) {
           <a href="#blog" onClick={() => setOpen(false)}>Blog</a>
           <a href="#contact" onClick={() => setOpen(false)}>Contact</a>
           <Link className="admin-link" to="/admin/login">
-            <ShieldCheck size={17} /> Admin
+            <UserRound size={17} /> Hirko
           </Link>
         </div>
       </nav>

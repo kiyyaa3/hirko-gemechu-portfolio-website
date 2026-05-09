@@ -9,7 +9,7 @@ const fallbackProjects = [
     _id: "fallback-1",
     title: "Inventory Management System",
     category: "Business System",
-    description: "A stock and sales tracking system with admin workflows, reporting, and responsive interface design.",
+    description: "A stock and sales tracking system with content workflows, reporting, and responsive interface design.",
     imageUrl: "/starter/project1.png",
     technologies: ["PHP", "MySQL", "Bootstrap"],
     featured: true
@@ -38,13 +38,13 @@ const skillGroups = [
   {
     title: "Data & Support",
     icon: Wrench,
-    items: ["MongoDB", "MySQL", "Admin dashboards", "CCTV support", "Troubleshooting"]
+    items: ["MongoDB", "MySQL", "Dashboards", "CCTV support", "Troubleshooting"]
   }
 ];
 
 const serviceItems = [
   { title: "Web Development", description: "Modern responsive websites, landing pages, portfolios, and company sites.", icon: "Laptop" },
-  { title: "Business Systems", description: "Inventory, schedules, dashboards, reporting, and admin workflows.", icon: "Database" },
+  { title: "Business Systems", description: "Inventory, schedules, dashboards, reporting, and practical content workflows.", icon: "Database" },
   { title: "Technical Support", description: "System support, troubleshooting, CCTV systems, and operational documentation.", icon: "ShieldCheck" }
 ];
 
@@ -96,8 +96,8 @@ const defaultSite = {
   heroStats,
   logoUrl: "/starter/logo.png",
   aboutTitle: "Full-stack development with practical support experience.",
-  aboutBody: "I build responsive websites, business systems, admin dashboards, and technical support solutions.",
-  aboutNote: "The admin can log in, add projects, upload images, edit details, feature projects, and delete old work.",
+  aboutBody: "I build responsive websites, business systems, dashboards, and technical support solutions.",
+  aboutNote: "Hirko Gemechu can keep projects, images, files, blog posts, and website details fresh from one dashboard.",
   highlightTitle: "Why work with me",
   highlightBody: "I combine full-stack development, database design, and practical technical support experience to build useful systems for real workflows.",
   highlightItems: ["Clean responsive UI", "Hirko Gemechu portfolio", "Practical business systems"],
@@ -105,12 +105,12 @@ const defaultSite = {
   services: serviceItems,
   skillsTitle: "Practical stack for websites, systems, and support.",
   skillGroups,
-  experienceTitle: "MERN portfolio CMS with admin control",
-  experienceBody: "This site already includes project management, image uploads, blog posts, public downloads, testimonials, contact messages, and secure admin login.",
+  experienceTitle: "MERN portfolio CMS for Hirko Gemechu",
+  experienceBody: "This site includes project management, image uploads, blog posts, public downloads, testimonials, contact messages, and secure dashboard access.",
   publicDownloads: fallbackAssets,
   testimonialsTitle: "Testimonials and certificates",
   projectsTitle: "Hirko Gemechu project showcase",
-  downloadsTitle: "Files shared by admin",
+  downloadsTitle: "Files shared by Hirko Gemechu",
   blogTitle: "Latest updates",
   contactTitle: "Let us talk about your next project.",
   contactBody: "Send me a message for websites, dashboards, business systems, technical support, or job opportunities.",
@@ -166,7 +166,7 @@ export default function App() {
         method: "POST",
         body: JSON.stringify(messageForm)
       });
-      setMessageStatus("Thank you. Your message was sent to the admin dashboard.");
+      setMessageStatus("Thank you. Your message was sent to Hirko Gemechu.");
       setMessageForm({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (error) {
       setMessageStatus(error.message);
@@ -296,7 +296,7 @@ export default function App() {
                     {item.fileUrl ? <a className="text-link" href={assetUrl(item.fileUrl)} target="_blank" rel="noreferrer">View certificate <ExternalLink size={16} /></a> : null}
                   </div>
                 </article>
-              )) : <p className="status-text">Testimonials and certificates will appear here after admin adds them.</p>}
+              )) : <p className="status-text">Testimonials and certificates will appear here after Hirko adds them.</p>}
             </div>
           </div>
         </section>
@@ -359,7 +359,7 @@ export default function App() {
                     </a>
                   </div>
                 </article>
-              )) : <p className="status-text">No public files yet. Admin can upload CVs, PDFs, DOCX, images, and documents.</p>}
+              )) : <p className="status-text">No public files yet. Hirko can share CVs, PDFs, DOCX, images, and documents.</p>}
             </div>
           </div>
         </section>
@@ -416,7 +416,7 @@ export default function App() {
           <div className="footer-links">
             {site.links?.map((link) => link.url ? <a key={`${link.label}-${link.url}`} href={link.url} target="_blank" rel="noreferrer">{link.label}</a> : null)}
           </div>
-          <Link to="/admin/login">Admin Login</Link>
+          <Link to="/admin/login">Hirko Login</Link>
         </div>
       </footer>
     </>
