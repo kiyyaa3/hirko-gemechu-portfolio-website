@@ -2,6 +2,9 @@
   command = "npm install && npm run build"
   publish = "client/dist"
 
+[build.environment]
+  VITE_API_URL = "https://hirko-gemechu-portfolio-website.onrender.com"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

@@ -36,12 +36,23 @@ const allowedOrigins = [
     .filter(Boolean)
 ];
 
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+
+  try {
+    const { hostname } = new URL(origin);
+    return allowedOrigins.includes(origin) || hostname.endsWith(".netlify.app");
+  } catch {
+    return false;
+  }
+}
+
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 

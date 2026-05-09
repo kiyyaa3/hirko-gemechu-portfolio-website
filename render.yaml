@@ -3,14 +3,14 @@ services:
     name: hirko-portfolio-mern
     runtime: node
     plan: free
-    buildCommand: npm install --include=dev && npm run build
+    buildCommand: npm install --omit=dev
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: SERVE_CLIENT
-        value: "true"
+        value: "false"
       - key: RATE_LIMIT_MAX
         value: "1000"
       - key: MONGO_URI
@@ -22,7 +22,7 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: CLIENT_URL
-        value: https://kiyyaa3.github.io/hirko-gemechu-portfolio-website,https://hirko-gemechu-portfolio-website.onrender.com
+        value: https://kiyyaa3.github.io/hirko-gemechu-portfolio-website
       - key: MONGO_TIMEOUT_MS
         value: "10000"
       - key: SMTP_HOST
