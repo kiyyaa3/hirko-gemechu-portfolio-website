@@ -9,6 +9,13 @@ const starterMessages = [
   }
 ];
 
+const quickQuestions = [
+  "Who is Hirko Gemechu?",
+  "What services do you offer?",
+  "What skills do you have?",
+  "How can I contact you?"
+];
+
 function fallbackReply(text) {
   const question = text.toLowerCase();
 
@@ -55,12 +62,11 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function sendMessage(event) {
-    event.preventDefault();
-    const text = input.trim();
-    if (!text || loading) return;
+  async function askQuestion(text) {
+    const question = text.trim();
+    if (!question || loading) return;
 
-    const nextMessages = [...messages, { role: "user", content: text }];
+    const nextMessages = [...messages, { role: "user", content: question }];
     setMessages(nextMessages);
     setInput("");
     setLoading(true);
@@ -69,21 +75,26 @@ export default function ChatWidget() {
       const response = await apiRequest("/api/chat", {
         method: "POST",
         body: JSON.stringify({
-          message: text,
+          message: question,
           history: nextMessages.slice(-8)
         })
       });
       const reply = response.reply || "";
       const genericReply = reply.includes("I can answer questions about Hirko Gemechu");
-      setMessages([...nextMessages, { role: "assistant", content: genericReply ? fallbackReply(text) : reply }]);
+      setMessages([...nextMessages, { role: "assistant", content: genericReply ? fallbackReply(question) : reply }]);
     } catch (error) {
       setMessages([
         ...nextMessages,
-        { role: "assistant", content: fallbackReply(text) }
+        { role: "assistant", content: fallbackReply(question) }
       ]);
     } finally {
       setLoading(false);
     }
+  }
+
+  async function sendMessage(event) {
+    event.preventDefault();
+    await askQuestion(input);
   }
 
   return (
@@ -93,7 +104,6 @@ export default function ChatWidget() {
           <div className="chat-head">
             <div>
               <span><Bot size={18} /> Hirko Assistant</span>
-              <p>Portfolio answers powered by Ollama</p>
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label="Close chat"><X size={18} /></button>
           </div>
@@ -106,6 +116,13 @@ export default function ChatWidget() {
             {loading ? (
               <div className="chat-bubble assistant loading"><Loader2 size={16} /> Thinking...</div>
             ) : null}
+          </div>
+          <div className="chat-quick-actions">
+            {quickQuestions.map((question) => (
+              <button key={question} type="button" onClick={() => askQuestion(question)} disabled={loading}>
+                {question}
+              </button>
+            ))}
           </div>
           <form className="chat-form" onSubmit={sendMessage}>
             <input

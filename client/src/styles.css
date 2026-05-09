@@ -1214,6 +1214,32 @@ select:focus {
   animation: spin 0.9s linear infinite;
 }
 
+.chat-quick-actions {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 12px 12px;
+  background: #f8fbfd;
+}
+
+.chat-quick-actions button {
+  flex: 0 0 auto;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: var(--primary-dark);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.chat-quick-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .chat-form {
   display: grid;
   grid-template-columns: 1fr 44px;
