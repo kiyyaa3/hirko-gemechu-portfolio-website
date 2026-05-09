@@ -15,8 +15,17 @@ export async function sendContactNotification(contactMessage) {
     SMTP_USER,
     SMTP_PASS,
     SMTP_FROM,
-    NOTIFY_EMAIL
+    NOTIFY_EMAIL,
+    RESEND_API_KEY
   } = process.env;
+
+  if (RESEND_API_KEY && NOTIFY_EMAIL) {
+    return sendResendNotification(contactMessage, {
+      apiKey: RESEND_API_KEY,
+      notifyEmail: NOTIFY_EMAIL,
+      from: SMTP_FROM || "Portfolio Contact <onboarding@resend.dev>"
+    });
+  }
 
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !NOTIFY_EMAIL) {
     console.log("Email notification skipped: SMTP settings are not configured.");
@@ -65,14 +74,65 @@ export async function sendContactNotification(contactMessage) {
     </div>
   `;
 
-  await transporter.sendMail({
-    from: SMTP_FROM || SMTP_USER,
-    to: NOTIFY_EMAIL,
-    replyTo: contactMessage.email,
-    subject: `New portfolio message: ${contactMessage.subject}`,
-    text: plainText,
-    html
+  try {
+    await transporter.sendMail({
+      from: SMTP_FROM || SMTP_USER,
+      to: NOTIFY_EMAIL,
+      replyTo: contactMessage.email,
+      subject: `New portfolio message: ${contactMessage.subject}`,
+      text: plainText,
+      html
+    });
+
+    return { sent: true, provider: "smtp" };
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function sendResendNotification(contactMessage, { apiKey, notifyEmail, from }) {
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify({
+      from,
+      to: [notifyEmail],
+      reply_to: contactMessage.email,
+      subject: `New portfolio message: ${contactMessage.subject}`,
+      text: [
+        `Name: ${contactMessage.name}`,
+        `Email: ${contactMessage.email}`,
+        `Phone: ${contactMessage.phone || "Not provided"}`,
+        "",
+        contactMessage.message
+      ].join("\n"),
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#14213d;max-width:640px">
+          <h2 style="margin:0 0 12px;color:#0f766e">New portfolio message</h2>
+          <table style="width:100%;border-collapse:collapse;margin:0 0 18px">
+            <tr><td style="padding:8px;border:1px solid #dce6ed;font-weight:bold">Name</td><td style="padding:8px;border:1px solid #dce6ed">${escapeHtml(contactMessage.name)}</td></tr>
+            <tr><td style="padding:8px;border:1px solid #dce6ed;font-weight:bold">Email</td><td style="padding:8px;border:1px solid #dce6ed">${escapeHtml(contactMessage.email)}</td></tr>
+            <tr><td style="padding:8px;border:1px solid #dce6ed;font-weight:bold">Phone</td><td style="padding:8px;border:1px solid #dce6ed">${escapeHtml(contactMessage.phone || "Not provided")}</td></tr>
+            <tr><td style="padding:8px;border:1px solid #dce6ed;font-weight:bold">Subject</td><td style="padding:8px;border:1px solid #dce6ed">${escapeHtml(contactMessage.subject)}</td></tr>
+          </table>
+          <div style="padding:14px;background:#f4f8fb;border:1px solid #dce6ed;border-radius:8px">
+            ${escapeHtml(contactMessage.message).replace(/\n/g, "<br>")}
+          </div>
+          <p style="color:#5d6b7a;font-size:13px">Reply directly to this email to contact the sender.</p>
+        </div>
+      `
+    })
   });
 
-  return { sent: true };
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.message || `Resend email failed with status ${response.status}.`);
+  }
+
+  return { sent: true, provider: "resend", id: data?.id };
 }

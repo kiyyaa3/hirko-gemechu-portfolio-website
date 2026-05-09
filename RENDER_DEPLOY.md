@@ -22,6 +22,7 @@ SMTP_USER
 SMTP_PASS
 SMTP_FROM
 NOTIFY_EMAIL
+RESEND_API_KEY
 SERVE_CLIENT
 RATE_LIMIT_MAX
 OLLAMA_BASE_URL
@@ -38,6 +39,7 @@ Render will generate `JWT_SECRET` from the Blueprint.
 - `SMTP_PASS`: your Google app password without spaces
 - `SMTP_FROM`: your Gmail address
 - `NOTIFY_EMAIL`: the inbox that should receive contact form notifications
+- `RESEND_API_KEY`: recommended on Render Free because SMTP ports can be blocked. Create one at https://resend.com/api-keys
 - `CLIENT_URL`: your frontend URL after Netlify deploy, for example `https://your-site.netlify.app`
 - `SERVE_CLIENT`: `false`
 - `RATE_LIMIT_MAX`: `1000`

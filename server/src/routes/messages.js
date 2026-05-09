@@ -44,6 +44,8 @@ router.post("/", async (req, res, next) => {
         : "Contact request received, but email notification was not sent. Check SMTP settings.",
       id: contactMessage._id,
       emailSent: Boolean(emailStatus.sent),
+      ...(emailStatus.provider ? { emailProvider: emailStatus.provider } : {}),
+      ...(emailStatus.note ? { emailNote: emailStatus.note } : {}),
       ...(emailStatus.error ? { emailError: emailStatus.error } : {})
     });
   } catch (error) {
