@@ -70,6 +70,21 @@ async function loadPortfolioContext() {
 
 function fallbackAnswer(question, context) {
   const lower = question.toLowerCase();
+
+  if (/\b(hi|hello|helo|hey)\b/.test(lower)) {
+    return "Hello. I am Hirko Gemechu's portfolio assistant. You can ask me about Hirko, his skills, projects, services, downloads, or contact details.";
+  }
+
+  if (
+    lower.includes("who is hirko")
+    || lower.includes("who is hirko gemechu")
+    || lower.includes("about hirko")
+    || lower.includes("tell me about hirko")
+    || lower.includes("hirko gemechu")
+  ) {
+    return "Hirko Gemechu is a software engineer and MERN developer who builds clean websites, dashboards, business systems, portfolio sites, and database-backed web applications. He also has practical technical support experience.";
+  }
+
   if (lower.includes("contact") || lower.includes("email") || lower.includes("phone")) {
     return "You can contact Hirko Gemechu from the contact section of this site. The portfolio lists email, phone, and a message form for project or job opportunities.";
   }

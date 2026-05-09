@@ -16,6 +16,16 @@ function fallbackReply(text) {
     return "Hello. I can help you learn about Hirko Gemechu's projects, skills, services, downloads, and contact details.";
   }
 
+  if (
+    question.includes("who is hirko")
+    || question.includes("who is hirko gemechu")
+    || question.includes("about hirko")
+    || question.includes("tell me about hirko")
+    || question.includes("hirko gemechu")
+  ) {
+    return "Hirko Gemechu is a software engineer and MERN developer who builds clean websites, dashboards, business systems, portfolio sites, and database-backed web applications. He also has practical technical support experience.";
+  }
+
   if (question.includes("service") || question.includes("build") || question.includes("offer")) {
     return "Hirko Gemechu offers web development, dashboards, portfolio/company sites, business systems, database-backed workflows, and technical support solutions.";
   }
@@ -63,7 +73,9 @@ export default function ChatWidget() {
           history: nextMessages.slice(-8)
         })
       });
-      setMessages([...nextMessages, { role: "assistant", content: response.reply }]);
+      const reply = response.reply || "";
+      const genericReply = reply.includes("I can answer questions about Hirko Gemechu");
+      setMessages([...nextMessages, { role: "assistant", content: genericReply ? fallbackReply(text) : reply }]);
     } catch (error) {
       setMessages([
         ...nextMessages,
