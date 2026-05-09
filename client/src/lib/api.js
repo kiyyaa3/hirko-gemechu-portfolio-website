@@ -1,8 +1,10 @@
 const API_URL = import.meta.env.VITE_API_URL || "";
+const BASE_PATH = import.meta.env.BASE_PATH || "";
 
 export function assetUrl(path) {
   if (!path) return "";
   if (path.startsWith("http")) return path;
+  if (!API_URL && path.startsWith("/")) return `${BASE_PATH}${path}`;
   return `${API_URL}${path}`;
 }
 

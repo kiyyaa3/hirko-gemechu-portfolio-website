@@ -6,6 +6,8 @@ const webpack = require("webpack");
 module.exports = (_env, argv) => {
   const isProduction = argv.mode === "production";
   const apiUrl = process.env.VITE_API_URL || (isProduction ? "" : "http://localhost:5000");
+  const basePath = process.env.BASE_PATH || "";
+  const publicPath = process.env.PUBLIC_PATH || "/";
 
   return {
     mode: isProduction ? "production" : "development",
@@ -14,7 +16,7 @@ module.exports = (_env, argv) => {
       path: path.resolve(__dirname, "dist"),
       filename: "assets/[name].[contenthash].js",
       clean: true,
-      publicPath: "/"
+      publicPath
     },
     devtool: isProduction ? "source-map" : "eval-source-map",
     resolve: {
@@ -55,7 +57,8 @@ module.exports = (_env, argv) => {
         ]
       }),
       new webpack.DefinePlugin({
-        "import.meta.env.VITE_API_URL": JSON.stringify(apiUrl)
+        "import.meta.env.VITE_API_URL": JSON.stringify(apiUrl),
+        "import.meta.env.BASE_PATH": JSON.stringify(basePath)
       })
     ],
     devServer: {

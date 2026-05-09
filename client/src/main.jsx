@@ -6,6 +6,8 @@ import AdminLogin from "./pages/AdminLogin.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import "./styles.css";
 
+const basePath = import.meta.env.BASE_PATH || "";
+
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("adminToken");
   return token ? children : <Navigate to="/admin/login" replace />;
@@ -13,7 +15,7 @@ function ProtectedRoute({ children }) {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={basePath}>
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/admin/login" element={<AdminLogin />} />

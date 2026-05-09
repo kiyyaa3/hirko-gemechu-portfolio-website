@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   FileUp,
   FolderKanban,
@@ -425,7 +426,7 @@ export default function AdminDashboard() {
           <p>Signed in as {admin.email || "admin"} and ready to manage content, files, blog posts, proof, and contact requests.</p>
         </div>
         <div className="admin-actions">
-          <a className="btn secondary" href="/">View Site</a>
+          <Link className="btn secondary" to="/">View Site</Link>
           <button className="btn danger" type="button" onClick={logout}><LogOut size={17} /> Logout</button>
         </div>
       </header>

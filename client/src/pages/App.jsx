@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Award, Briefcase, Code2, Database, Download, ExternalLink, FileText, Globe2, Laptop, Mail, MapPin, Newspaper, Phone, Server, ShieldCheck, Wrench } from "lucide-react";
 import Header from "../components/Header.jsx";
 import { apiRequest, assetUrl } from "../lib/api.js";
@@ -393,7 +394,7 @@ export default function App() {
           <div className="footer-links">
             {site.links?.map((link) => link.url ? <a key={`${link.label}-${link.url}`} href={link.url} target="_blank" rel="noreferrer">{link.label}</a> : null)}
           </div>
-          <a href="/admin/login">Admin Login</a>
+          <Link to="/admin/login">Admin Login</Link>
         </div>
       </footer>
     </>

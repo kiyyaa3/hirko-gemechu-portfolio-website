@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { apiRequest } from "../lib/api.js";
@@ -58,7 +59,7 @@ export default function AdminLogin() {
         <button className="btn primary" type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
-        <a className="text-link" href="/">Back to portfolio</a>
+        <Link className="text-link" to="/">Back to portfolio</Link>
       </form>
     </main>
   );
