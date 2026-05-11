@@ -8,6 +8,7 @@ import Post from "../models/Post.js";
 import Testimonial from "../models/Testimonial.js";
 import ChatMessage from "../models/ChatMessage.js";
 import { requireAdmin } from "../middleware/auth.js";
+import { sendChatNotification } from "../services/email.js";
 
 const router = express.Router();
 
@@ -50,7 +51,8 @@ function cleanSessionId(value = "") {
 
 async function saveChatExchange(req, { sessionId, question, answer, source, history }) {
   try {
-    await ChatMessage.create({
+    const previousMessages = await ChatMessage.countDocuments({ sessionId });
+    const chatMessage = await ChatMessage.create({
       sessionId,
       question,
       answer,
@@ -59,9 +61,20 @@ async function saveChatExchange(req, { sessionId, question, answer, source, hist
       visitorIp: req.ip || req.headers["x-forwarded-for"] || "",
       userAgent: String(req.headers["user-agent"] || "").slice(0, 300)
     });
+
+    return { chatMessage, isFirstMessage: previousMessages === 0 };
   } catch (error) {
     console.warn("Chat log was not saved:", error.message);
+    return { chatMessage: null, isFirstMessage: false };
   }
+}
+
+function notifyFirstChatMessage(savedChat) {
+  if (!savedChat?.isFirstMessage || !savedChat.chatMessage) return;
+
+  sendChatNotification(savedChat.chatMessage).catch((error) => {
+    console.warn("Chat email notification failed:", error.message);
+  });
 }
 
 async function loadPortfolioContext() {
@@ -191,13 +204,15 @@ router.post("/", async (req, res, next) => {
     try {
       const result = await graph.invoke({ question: question.slice(0, 1000), history });
       const reply = result.answer || fallbackAnswer(question, result.context);
-      await saveChatExchange(req, { sessionId, question, answer: reply, source: result.source, history });
+      const savedChat = await saveChatExchange(req, { sessionId, question, answer: reply, source: result.source, history });
+      notifyFirstChatMessage(savedChat);
       return res.json({ reply, source: result.source, sessionId });
     } catch (error) {
       console.warn("Ollama chat fallback:", error.message);
       const context = await loadPortfolioContext();
       const reply = fallbackAnswer(question, context);
-      await saveChatExchange(req, { sessionId, question, answer: reply, source: "fallback", history });
+      const savedChat = await saveChatExchange(req, { sessionId, question, answer: reply, source: "fallback", history });
+      notifyFirstChatMessage(savedChat);
       return res.json({
         reply,
         source: "fallback",
