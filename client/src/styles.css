@@ -910,7 +910,7 @@ select:focus {
 }
 
 .admin-summary {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .summary-card,
@@ -927,6 +927,11 @@ select:focus {
   padding: 18px 20px;
 }
 
+.summary-card.urgent {
+  border-color: rgba(190, 18, 60, 0.28);
+  background: linear-gradient(135deg, rgba(190, 18, 60, 0.08), rgba(255, 255, 255, 0.92));
+}
+
 .summary-card span {
   display: block;
   font-size: 2rem;
@@ -939,8 +944,49 @@ select:focus {
   font-weight: 700;
 }
 
+.message-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.filter-chip span {
+  display: inline-flex;
+  min-width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--primary-dark);
+  font-size: 0.88rem;
+}
+
+.filter-chip.active,
+.filter-chip:hover {
+  border-color: rgba(15, 118, 110, 0.26);
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.14), rgba(217, 119, 6, 0.1));
+  color: var(--primary-dark);
+}
+
 .admin-section-nav {
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
 }
 
 .admin-nav-chip {

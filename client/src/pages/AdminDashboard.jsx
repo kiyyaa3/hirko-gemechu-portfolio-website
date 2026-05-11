@@ -107,6 +107,7 @@ export default function AdminDashboard() {
   const [editingPostId, setEditingPostId] = useState("");
   const [editingTestimonialId, setEditingTestimonialId] = useState("");
   const [editingKnowledgeId, setEditingKnowledgeId] = useState("");
+  const [messageFilter, setMessageFilter] = useState("all");
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
 
@@ -485,7 +486,21 @@ export default function AdminDashboard() {
   }
 
   const newMessageCount = messages.filter((message) => message.status === "new").length;
+  const readMessageCount = messages.filter((message) => message.status === "read").length;
+  const archivedMessageCount = messages.filter((message) => message.status === "archived").length;
+  const filteredMessages = messageFilter === "all"
+    ? messages
+    : messages.filter((message) => message.status === messageFilter);
   const publicAssetCount = assets.filter((asset) => asset.public).length;
+  const publishedPostCount = posts.filter((post) => post.published).length;
+  const publicKnowledgeCount = knowledgeEntries.filter((entry) => entry.public).length;
+  const publicTestimonialCount = testimonials.filter((item) => item.public).length;
+  const messageFilters = [
+    { id: "all", label: "All", count: messages.length },
+    { id: "new", label: "New", count: newMessageCount },
+    { id: "read", label: "Read", count: readMessageCount },
+    { id: "archived", label: "Archived", count: archivedMessageCount }
+  ];
   const heroPreviewUrl = contentFiles.heroImage ? URL.createObjectURL(contentFiles.heroImage) : assetUrl(content?.heroImageUrl);
   const heroVideoPreviewUrl = contentFiles.heroVideo ? URL.createObjectURL(contentFiles.heroVideo) : assetUrl(content?.heroVideoUrl);
   const logoPreviewUrl = contentFiles.logo ? URL.createObjectURL(contentFiles.logo) : assetUrl(content?.logoUrl);
@@ -510,16 +525,32 @@ export default function AdminDashboard() {
           <p>Projects</p>
         </article>
         <article className="summary-card">
-          <span>{posts.length}</span>
-          <p>Posts</p>
+          <span>{messages.length}</span>
+          <p>Total Contacts</p>
+        </article>
+        <article className="summary-card urgent">
+          <span>{newMessageCount}</span>
+          <p>New Messages</p>
+        </article>
+        <article className="summary-card">
+          <span>{chatMessages.length}</span>
+          <p>Chat Questions</p>
+        </article>
+        <article className="summary-card">
+          <span>{publishedPostCount}</span>
+          <p>Published Posts</p>
         </article>
         <article className="summary-card">
           <span>{publicAssetCount}</span>
           <p>Public Downloads</p>
         </article>
         <article className="summary-card">
-          <span>{newMessageCount}</span>
-          <p>New Messages</p>
+          <span>{publicKnowledgeCount}</span>
+          <p>Chatbot Q&A</p>
+        </article>
+        <article className="summary-card">
+          <span>{publicTestimonialCount}</span>
+          <p>Public Proof</p>
         </article>
       </section>
 
@@ -1291,8 +1322,21 @@ export default function AdminDashboard() {
           {activeSection === "messages" && (
             <>
               <h2>Inbox</h2>
+              <div className="message-filter-bar" aria-label="Filter contact messages">
+                {messageFilters.map((filter) => (
+                  <button
+                    key={filter.id}
+                    className={`filter-chip ${messageFilter === filter.id ? "active" : ""}`}
+                    type="button"
+                    onClick={() => setMessageFilter(filter.id)}
+                  >
+                    {filter.label}
+                    <span>{filter.count}</span>
+                  </button>
+                ))}
+              </div>
               <div className="admin-projects">
-                {messages.map((message) => (
+                {filteredMessages.length ? filteredMessages.map((message) => (
                   <article className="message-card" key={message._id}>
                     <p className="eyebrow">{message.status} | {new Date(message.createdAt).toLocaleString()}</p>
                     <h3>{message.subject}</h3>
@@ -1307,7 +1351,7 @@ export default function AdminDashboard() {
                       <button className="btn danger" type="button" onClick={() => removeItem(`/api/messages/${message._id}`, "Message deleted.", "Delete this message?")}><Trash2 size={16} /> Delete</button>
                     </div>
                   </article>
-                ))}
+                )) : <p className="status-text">No {messageFilter === "all" ? "" : messageFilter} contact messages found.</p>}
               </div>
               <h2>Chat conversations</h2>
               <div className="admin-projects">
