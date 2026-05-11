@@ -4,6 +4,11 @@ import { requireAdmin } from "../middleware/auth.js";
 import { sendContactNotification } from "../services/email.js";
 
 const router = express.Router();
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function cleanField(value = "", maxLength = 1000) {
+  return String(value || "").replace(/\s+\n/g, "\n").trim().slice(0, maxLength);
+}
 
 function publicEmailError(errorMessage = "") {
   const message = String(errorMessage);
@@ -22,10 +27,18 @@ function publicEmailError(errorMessage = "") {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { name, email, phone, subject, message } = req.body;
+    const name = cleanField(req.body?.name, 120);
+    const email = cleanField(req.body?.email, 180).toLowerCase();
+    const phone = cleanField(req.body?.phone, 60);
+    const subject = cleanField(req.body?.subject, 180);
+    const message = cleanField(req.body?.message, 5000);
 
     if (!name || !email || !subject || !message) {
       return res.status(400).json({ message: "Name, email, subject, and message are required." });
+    }
+
+    if (!emailPattern.test(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address." });
     }
 
     const contactMessage = await Message.create({ name, email, phone, subject, message });

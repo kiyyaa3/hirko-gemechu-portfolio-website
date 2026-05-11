@@ -130,6 +130,7 @@ export default function App() {
   const [content, setContent] = useState(null);
   const [messageForm, setMessageForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [messageStatus, setMessageStatus] = useState("");
+  const [messageSending, setMessageSending] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -161,7 +162,10 @@ export default function App() {
 
   async function sendMessage(event) {
     event.preventDefault();
+    if (messageSending) return;
+
     setMessageStatus("Sending...");
+    setMessageSending(true);
 
     try {
       const response = await apiRequest("/api/messages", {
@@ -174,6 +178,8 @@ export default function App() {
       setMessageForm({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (error) {
       setMessageStatus(error.message);
+    } finally {
+      setMessageSending(false);
     }
   }
 
@@ -415,8 +421,10 @@ export default function App() {
               <input value={messageForm.phone} onChange={(event) => setMessageForm({ ...messageForm, phone: event.target.value })} placeholder="Phone number" />
               <input value={messageForm.subject} onChange={(event) => setMessageForm({ ...messageForm, subject: event.target.value })} placeholder="Subject" required />
               <textarea rows="5" value={messageForm.message} onChange={(event) => setMessageForm({ ...messageForm, message: event.target.value })} placeholder="Message" required />
-              <button className="btn light" type="submit"><Mail size={17} /> Send Request</button>
-              {messageStatus ? <p>{messageStatus}</p> : null}
+              <button className="btn light" type="submit" disabled={messageSending}>
+                <Mail size={17} /> {messageSending ? "Sending..." : "Send Request"}
+              </button>
+              {messageStatus ? <p className="form-status">{messageStatus}</p> : null}
             </form>
           </div>
         </section>

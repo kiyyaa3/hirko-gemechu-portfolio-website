@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Bot, Loader2, MessageCircle, Send, X } from "lucide-react";
 import { apiRequest } from "../lib/api.js";
 
@@ -57,6 +57,15 @@ function fallbackReply(text) {
 }
 
 export default function ChatWidget() {
+  const sessionId = useMemo(() => {
+    const key = "hirkoChatSessionId";
+    const existing = localStorage.getItem(key);
+    if (existing) return existing;
+
+    const created = `web-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    localStorage.setItem(key, created);
+    return created;
+  }, []);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState(starterMessages);
   const [input, setInput] = useState("");
@@ -75,6 +84,7 @@ export default function ChatWidget() {
       const response = await apiRequest("/api/chat", {
         method: "POST",
         body: JSON.stringify({
+          sessionId,
           message: question,
           history: nextMessages.slice(-8)
         })

@@ -80,6 +80,7 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState([]);
   const [assets, setAssets] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [chatMessages, setChatMessages] = useState([]);
   const [posts, setPosts] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [content, setContent] = useState(null);
@@ -108,10 +109,11 @@ export default function AdminDashboard() {
   }, []);
 
   async function loadAdminData() {
-    const [projectData, assetData, messageData, contentData, postData, testimonialData] = await Promise.all([
+    const [projectData, assetData, messageData, chatData, contentData, postData, testimonialData] = await Promise.all([
       apiRequest("/api/projects"),
       apiRequest("/api/assets?all=true"),
       apiRequest("/api/messages", { headers: authHeaders() }),
+      apiRequest("/api/chat", { headers: authHeaders() }),
       apiRequest("/api/content"),
       apiRequest("/api/posts?all=true"),
       apiRequest("/api/testimonials?all=true")
@@ -120,6 +122,7 @@ export default function AdminDashboard() {
     setProjects(projectData);
     setAssets(assetData);
     setMessages(messageData);
+    setChatMessages(chatData);
     setContent(contentData);
     setPosts(postData);
     setTestimonials(testimonialData);
@@ -1163,6 +1166,19 @@ export default function AdminDashboard() {
                     </div>
                   </article>
                 ))}
+              </div>
+              <h2>Chat conversations</h2>
+              <div className="admin-projects">
+                {chatMessages.length ? chatMessages.map((chat) => (
+                  <article className="message-card" key={chat._id}>
+                    <p className="eyebrow">{chat.source} | {new Date(chat.createdAt).toLocaleString()}</p>
+                    <h3>{chat.question}</h3>
+                    <p>{chat.answer}</p>
+                    <div className="message-meta">
+                      <span>Session: {chat.sessionId}</span>
+                    </div>
+                  </article>
+                )) : <p className="status-text">No chatbot conversations saved yet.</p>}
               </div>
             </>
           )}

@@ -6,6 +6,8 @@ import SiteContent from "../models/SiteContent.js";
 import Project from "../models/Project.js";
 import Post from "../models/Post.js";
 import Testimonial from "../models/Testimonial.js";
+import ChatMessage from "../models/ChatMessage.js";
+import { requireAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -39,6 +41,27 @@ function messageText(message) {
     return message.content.map((part) => part?.text || "").join(" ").trim();
   }
   return "";
+}
+
+function cleanSessionId(value = "") {
+  const sessionId = cleanText(value).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80);
+  return sessionId || `chat-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+async function saveChatExchange(req, { sessionId, question, answer, source, history }) {
+  try {
+    await ChatMessage.create({
+      sessionId,
+      question,
+      answer,
+      source,
+      history,
+      visitorIp: req.ip || req.headers["x-forwarded-for"] || "",
+      userAgent: String(req.headers["user-agent"] || "").slice(0, 300)
+    });
+  } catch (error) {
+    console.warn("Chat log was not saved:", error.message);
+  }
 }
 
 async function loadPortfolioContext() {
@@ -141,12 +164,22 @@ const graph = new StateGraph(ChatState)
   .addEdge("generate_reply", END)
   .compile();
 
+router.get("/", requireAdmin, async (_req, res, next) => {
+  try {
+    const chatMessages = await ChatMessage.find().sort({ createdAt: -1 }).limit(100).lean();
+    return res.json(chatMessages);
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.post("/", async (req, res, next) => {
   try {
     const question = cleanText(req.body?.message);
     if (!question) {
       return res.status(400).json({ message: "Message is required." });
     }
+    const sessionId = cleanSessionId(req.body?.sessionId);
 
     const history = Array.isArray(req.body?.history)
       ? req.body.history.slice(-8).map((item) => ({
@@ -157,13 +190,18 @@ router.post("/", async (req, res, next) => {
 
     try {
       const result = await graph.invoke({ question: question.slice(0, 1000), history });
-      return res.json({ reply: result.answer || fallbackAnswer(question, result.context), source: result.source });
+      const reply = result.answer || fallbackAnswer(question, result.context);
+      await saveChatExchange(req, { sessionId, question, answer: reply, source: result.source, history });
+      return res.json({ reply, source: result.source, sessionId });
     } catch (error) {
       console.warn("Ollama chat fallback:", error.message);
       const context = await loadPortfolioContext();
+      const reply = fallbackAnswer(question, context);
+      await saveChatExchange(req, { sessionId, question, answer: reply, source: "fallback", history });
       return res.json({
-        reply: fallbackAnswer(question, context),
+        reply,
         source: "fallback",
+        sessionId,
         warning: "Ollama is not available. Set OLLAMA_BASE_URL and OLLAMA_MODEL to enable AI answers."
       });
     }
