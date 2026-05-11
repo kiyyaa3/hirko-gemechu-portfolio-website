@@ -43,7 +43,9 @@ function isAllowedOrigin(origin) {
 
   try {
     const { hostname } = new URL(origin);
-    return allowedOrigins.includes(origin) || hostname.endsWith(".netlify.app");
+    return allowedOrigins.includes(origin)
+      || hostname.endsWith(".netlify.app")
+      || hostname.endsWith(".vercel.app");
   } catch {
     return false;
   }
