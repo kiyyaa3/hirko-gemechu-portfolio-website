@@ -29,7 +29,11 @@ export async function sendContactNotification(contactMessage) {
 
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !NOTIFY_EMAIL) {
     console.log("Email notification skipped: SMTP settings are not configured.");
-    return { skipped: true };
+    return {
+      sent: false,
+      skipped: true,
+      error: "Email notification settings are missing. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and NOTIFY_EMAIL in Render."
+    };
   }
 
   const transporter = nodemailer.createTransport({
@@ -145,7 +149,11 @@ export async function sendChatNotification(chatMessage) {
 
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !NOTIFY_EMAIL) {
     console.log("Chat notification skipped: email settings are not configured.");
-    return { skipped: true };
+    return {
+      sent: false,
+      skipped: true,
+      error: "Email notification settings are missing. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and NOTIFY_EMAIL in Render."
+    };
   }
 
   const transporter = nodemailer.createTransport({

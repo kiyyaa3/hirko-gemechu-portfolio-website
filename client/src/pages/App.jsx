@@ -176,7 +176,7 @@ export default function App() {
       });
       setMessageStatus(response.emailSent
         ? "Thank you. Your message was sent to Hirko Gemechu by email."
-        : "Thank you. Your message was saved. Email notification needs SMTP settings checked.");
+        : `Thank you. Your message was saved, but email was not sent. ${response.emailError || response.emailNote || "Check SMTP settings in Render."}`);
       setMessageForm({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (error) {
       setMessageStatus(error.message);
