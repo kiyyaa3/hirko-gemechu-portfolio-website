@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hirko-gemechu-portfolio-website-server-git-main-buna.vercel.app/sitemap.xml

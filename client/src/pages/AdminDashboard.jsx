@@ -252,6 +252,7 @@ export default function AdminDashboard() {
         "availabilityText",
         "heroImageUrl",
         "heroVideoUrl",
+        "chatbotMode",
         "logoUrl",
         "aboutTitle",
         "aboutBody",
@@ -262,6 +263,7 @@ export default function AdminDashboard() {
         "skillsTitle",
         "experienceTitle",
         "experienceBody",
+        "timelineTitle",
         "testimonialsTitle",
         "projectsTitle",
         "downloadsTitle",
@@ -273,8 +275,9 @@ export default function AdminDashboard() {
         "phone",
         "location"
       ].forEach((field) => payload.append(field, content[field] || ""));
+      payload.append("chatbotEnabled", content.chatbotEnabled !== false ? "true" : "false");
 
-      ["links", "heroStats", "services", "skillGroups", "publicDownloads", "highlightItems"].forEach((field) => {
+      ["links", "heroStats", "services", "skillGroups", "publicDownloads", "highlightItems", "timelineItems"].forEach((field) => {
         payload.append(field, JSON.stringify(content[field] || []));
       });
 
@@ -485,6 +488,12 @@ export default function AdminDashboard() {
     window.location.href = "/admin/login";
   }
 
+  function whatsappUrl(phone = "", subject = "") {
+    const digits = String(phone).replace(/\D/g, "");
+    if (!digits) return "";
+    return `https://wa.me/${digits}?text=${encodeURIComponent(`Hello, I received your message about ${subject || "your request"}.`)}`;
+  }
+
   const newMessageCount = messages.filter((message) => message.status === "new").length;
   const readMessageCount = messages.filter((message) => message.status === "read").length;
   const archivedMessageCount = messages.filter((message) => message.status === "archived").length;
@@ -597,6 +606,22 @@ export default function AdminDashboard() {
               <input value={content.announcementText || ""} onChange={(event) => setContent({ ...content, announcementText: event.target.value })} />
               <label>Availability Text</label>
               <input value={content.availabilityText || ""} onChange={(event) => setContent({ ...content, availabilityText: event.target.value })} />
+              <div className="admin-subsection">
+                <h3>Chatbot Control</h3>
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={content.chatbotEnabled !== false}
+                    onChange={(event) => setContent({ ...content, chatbotEnabled: event.target.checked })}
+                  />
+                  Show chatbot on website
+                </label>
+                <label>Chatbot Mode</label>
+                <select value={content.chatbotMode || "full"} onChange={(event) => setContent({ ...content, chatbotMode: event.target.value })}>
+                  <option value="full">Website + CV + Q&A</option>
+                  <option value="qa">Only admin Q&A</option>
+                </select>
+              </div>
               <div className="admin-subsection">
                 <h3>Hero Buttons</h3>
                 <div className="two-fields">
@@ -833,6 +858,76 @@ export default function AdminDashboard() {
                 <input value={content.experienceTitle || ""} onChange={(event) => setContent({ ...content, experienceTitle: event.target.value })} />
                 <label>Experience Card Body</label>
                 <textarea rows="4" value={content.experienceBody || ""} onChange={(event) => setContent({ ...content, experienceBody: event.target.value })} />
+              </div>
+              <div className="admin-subsection">
+                <h3>Education & Experience Timeline</h3>
+                <label>Timeline Section Title</label>
+                <input value={content.timelineTitle || ""} onChange={(event) => setContent({ ...content, timelineTitle: event.target.value })} />
+                {(content.timelineItems || []).map((item, index) => (
+                  <div className="repeat-editor" key={`timeline-${index}`}>
+                    <div className="two-fields">
+                      <div>
+                        <label>Title</label>
+                        <input
+                          value={item.title || ""}
+                          onChange={(event) => {
+                            const timelineItems = [...(content.timelineItems || [])];
+                            timelineItems[index] = { ...timelineItems[index], title: event.target.value };
+                            setContent({ ...content, timelineItems });
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label>Institution / Place</label>
+                        <input
+                          value={item.institution || ""}
+                          onChange={(event) => {
+                            const timelineItems = [...(content.timelineItems || [])];
+                            timelineItems[index] = { ...timelineItems[index], institution: event.target.value };
+                            setContent({ ...content, timelineItems });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="two-fields">
+                      <div>
+                        <label>Period</label>
+                        <input
+                          value={item.period || ""}
+                          onChange={(event) => {
+                            const timelineItems = [...(content.timelineItems || [])];
+                            timelineItems[index] = { ...timelineItems[index], period: event.target.value };
+                            setContent({ ...content, timelineItems });
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label>Meta</label>
+                        <input
+                          value={item.meta || ""}
+                          placeholder="CGPA 3.24, React, Node..."
+                          onChange={(event) => {
+                            const timelineItems = [...(content.timelineItems || [])];
+                            timelineItems[index] = { ...timelineItems[index], meta: event.target.value };
+                            setContent({ ...content, timelineItems });
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <label>Description</label>
+                    <textarea
+                      rows="3"
+                      value={item.description || ""}
+                      onChange={(event) => {
+                        const timelineItems = [...(content.timelineItems || [])];
+                        timelineItems[index] = { ...timelineItems[index], description: event.target.value };
+                        setContent({ ...content, timelineItems });
+                      }}
+                    />
+                    <button className="btn secondary" type="button" onClick={() => setContent({ ...content, timelineItems: (content.timelineItems || []).filter((_, itemIndex) => itemIndex !== index) })}>Remove Timeline Item</button>
+                  </div>
+                ))}
+                <button className="btn secondary" type="button" onClick={() => setContent({ ...content, timelineItems: [...(content.timelineItems || []), { title: "", institution: "", period: "", description: "", meta: "" }] })}>Add Timeline Item</button>
               </div>
               <div className="two-fields">
                 <div>
@@ -1346,6 +1441,9 @@ export default function AdminDashboard() {
                       {message.phone ? <a href={`tel:${message.phone}`}>{message.phone}</a> : null}
                     </div>
                     <div className="project-controls">
+                      <a className="btn secondary" href={`mailto:${message.email}?subject=${encodeURIComponent(`Re: ${message.subject}`)}`}>Reply by Email</a>
+                      {message.phone ? <a className="btn secondary" href={`tel:${message.phone}`}>Call</a> : null}
+                      {whatsappUrl(message.phone, message.subject) ? <a className="btn secondary" href={whatsappUrl(message.phone, message.subject)} target="_blank" rel="noreferrer">WhatsApp</a> : null}
                       <button className="btn secondary" type="button" onClick={() => updateMessage(message._id, "read")}>Mark Read</button>
                       <button className="btn secondary" type="button" onClick={() => updateMessage(message._id, "archived")}>Archive</button>
                       <button className="btn danger" type="button" onClick={() => removeItem(`/api/messages/${message._id}`, "Message deleted.", "Delete this message?")}><Trash2 size={16} /> Delete</button>

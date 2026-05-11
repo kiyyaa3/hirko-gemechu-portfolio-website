@@ -44,6 +44,17 @@ const statSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const timelineItemSchema = new mongoose.Schema(
+  {
+    title: { type: String, trim: true },
+    institution: { type: String, trim: true },
+    period: { type: String, trim: true },
+    description: { type: String, trim: true },
+    meta: { type: String, trim: true }
+  },
+  { _id: false }
+);
+
 const siteContentSchema = new mongoose.Schema(
   {
     headerTitle: {
@@ -93,6 +104,15 @@ const siteContentSchema = new mongoose.Schema(
     heroVideoUrl: {
       type: String,
       default: "https://videos.pexels.com/video-files/7989672/7989672-hd_1920_1080_25fps.mp4"
+    },
+    chatbotEnabled: {
+      type: Boolean,
+      default: true
+    },
+    chatbotMode: {
+      type: String,
+      enum: ["full", "qa"],
+      default: "full"
     },
     heroStats: {
       type: [statSchema],
@@ -184,6 +204,29 @@ const siteContentSchema = new mongoose.Schema(
     experienceBody: {
       type: String,
       default: "This site includes project management, image uploads, blog posts, public downloads, testimonials, contact messages, and secure dashboard access."
+    },
+    timelineTitle: {
+      type: String,
+      default: "Education and experience"
+    },
+    timelineItems: {
+      type: [timelineItemSchema],
+      default: [
+        {
+          title: "BSc Software Engineering",
+          institution: "Arba Minch University",
+          period: "Graduate",
+          description: "Software Engineering graduate with practical full-stack development and support experience.",
+          meta: "CGPA 3.24"
+        },
+        {
+          title: "MERN Portfolio CMS",
+          institution: "Personal Project",
+          period: "Current",
+          description: "Built a MongoDB, Express, React, and Node portfolio system with admin content management, uploads, contact messages, and chatbot Q&A.",
+          meta: "React, Node, MongoDB"
+        }
+      ]
     },
     publicDownloads: {
       type: [downloadSchema],

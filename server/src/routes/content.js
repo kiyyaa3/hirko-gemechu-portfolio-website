@@ -15,6 +15,8 @@ async function getContentDocument() {
   [
     "heroImageUrl",
     "heroVideoUrl",
+    "chatbotEnabled",
+    "chatbotMode",
     "announcementText",
     "primaryButtonLabel",
     "primaryButtonUrl",
@@ -33,6 +35,8 @@ async function getContentDocument() {
     "skillGroups",
     "experienceTitle",
     "experienceBody",
+    "timelineTitle",
+    "timelineItems",
     "publicDownloads",
     "testimonialsTitle",
     "projectsTitle",
@@ -69,7 +73,7 @@ router.put("/", requireAdmin, fileUpload.fields([
     const content = await getContentDocument();
     const body = { ...req.body };
 
-    ["links", "heroStats", "services", "skillGroups", "publicDownloads", "highlightItems"].forEach((field) => {
+    ["links", "heroStats", "services", "skillGroups", "publicDownloads", "highlightItems", "timelineItems"].forEach((field) => {
       if (typeof body[field] === "string") {
         body[field] = JSON.parse(body[field]);
       }
@@ -82,6 +86,8 @@ router.put("/", requireAdmin, fileUpload.fields([
       "heroBody",
       "heroImageUrl",
       "heroVideoUrl",
+      "chatbotEnabled",
+      "chatbotMode",
       "announcementText",
       "primaryButtonLabel",
       "primaryButtonUrl",
@@ -102,6 +108,8 @@ router.put("/", requireAdmin, fileUpload.fields([
       "skillGroups",
       "experienceTitle",
       "experienceBody",
+      "timelineTitle",
+      "timelineItems",
       "publicDownloads",
       "testimonialsTitle",
       "projectsTitle",
@@ -122,12 +130,16 @@ router.put("/", requireAdmin, fileUpload.fields([
       }
     });
 
+    if ("chatbotEnabled" in body) {
+      content.chatbotEnabled = body.chatbotEnabled === true || body.chatbotEnabled === "true";
+    }
+
     if (req.files?.heroImage?.[0]) {
       content.heroImageUrl = await saveUploadedFile(req.files.heroImage[0]);
     }
 
     if (req.files?.heroVideo?.[0]) {
-      content.heroVideoUrl = saveUploadedDiskFile(req.files.heroVideo[0]);
+      content.heroVideoUrl = await saveUploadedDiskFile(req.files.heroVideo[0]);
     }
 
     if (req.files?.logo?.[0]) {

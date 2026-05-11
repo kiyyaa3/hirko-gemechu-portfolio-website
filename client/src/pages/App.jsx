@@ -76,6 +76,23 @@ const fallbackAssets = [
   }
 ];
 
+const fallbackTimelineItems = [
+  {
+    title: "BSc Software Engineering",
+    institution: "Arba Minch University",
+    period: "Graduate",
+    description: "Software Engineering graduate with practical full-stack development and support experience.",
+    meta: "CGPA 3.24"
+  },
+  {
+    title: "MERN Portfolio CMS",
+    institution: "Personal Project",
+    period: "Current",
+    description: "Built a portfolio CMS with MongoDB, Express, React, Node, uploads, contact messages, and chatbot Q&A.",
+    meta: "React, Node, MongoDB"
+  }
+];
+
 const heroStats = [
   { value: "Hirko", label: "Personal project studio" },
   { value: "MERN", label: "Mongo, Express, React, Node" },
@@ -95,6 +112,8 @@ const defaultSite = {
   availabilityText: "Open to work",
   heroImageUrl: "/starter/hirko-optimized.jpg",
   heroVideoUrl: "https://videos.pexels.com/video-files/7989672/7989672-hd_1920_1080_25fps.mp4",
+  chatbotEnabled: true,
+  chatbotMode: "full",
   heroStats,
   logoUrl: "/starter/logo.png",
   aboutTitle: "Full-stack development with practical support experience.",
@@ -109,6 +128,8 @@ const defaultSite = {
   skillGroups,
   experienceTitle: "MERN portfolio CMS for Hirko Gemechu",
   experienceBody: "This site includes project management, image uploads, blog posts, public downloads, testimonials, contact messages, and secure dashboard access.",
+  timelineTitle: "Education and experience",
+  timelineItems: fallbackTimelineItems,
   publicDownloads: fallbackAssets,
   testimonialsTitle: "Testimonials and certificates",
   projectsTitle: "Hirko Gemechu project showcase",
@@ -326,6 +347,29 @@ export default function App() {
           </div>
         </section>
 
+        <section className="section muted" id="timeline">
+          <div className="container">
+            <div className="section-heading">
+              <p className="eyebrow">Background</p>
+              <h2>{site.timelineTitle}</h2>
+            </div>
+            <div className="timeline-list">
+              {(site.timelineItems?.length ? site.timelineItems : fallbackTimelineItems).map((item, index) => (
+                <article className="timeline-item" key={`${item.title}-${index}`}>
+                  <div className="timeline-marker"><Briefcase size={18} /></div>
+                  <div>
+                    <p className="eyebrow">{item.period}</p>
+                    <h3>{item.title}</h3>
+                    <span>{item.institution}</span>
+                    <p>{item.description}</p>
+                    {item.meta ? <strong>{item.meta}</strong> : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="section" id="projects">
           <div className="container">
             <div className="section-heading">
@@ -446,7 +490,7 @@ export default function App() {
           <Link to="/admin/login">Hirko Login</Link>
         </div>
       </footer>
-      <ChatWidget />
+      {site.chatbotEnabled !== false ? <ChatWidget /> : null}
     </>
   );
 }

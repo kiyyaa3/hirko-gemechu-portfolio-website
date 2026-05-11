@@ -113,27 +113,39 @@ async function loadPortfolioContext() {
   ));
   const serviceLines = (content?.services || []).map((service) => `${service.title}: ${service.description}`);
   const skillLines = (content?.skillGroups || []).map((group) => `${group.title}: ${(group.items || []).join(", ")}`);
+  const timelineLines = (content?.timelineItems || []).map((item) => (
+    `Timeline: ${item.title}. Institution: ${item.institution}. Period: ${item.period}. Details: ${cleanText(item.description)}. ${item.meta ? `Meta: ${item.meta}.` : ""}`
+  ));
   const downloadLines = (content?.publicDownloads || []).map((download) => (
     `Download: ${download.title}. Category: ${download.category}. Description: ${download.description}. File: ${download.fileUrl}.`
   ));
   const socialLines = (content?.links || []).filter((link) => link?.url).map((link) => `${link.label}: ${link.url}`);
   const cvText = await loadCvText(content);
   const cvProfileLinks = extractProfileLinks(cvText);
-
-  return [
+  const baseLines = [
     `Name: ${content?.headerTitle || "Hirko Gemechu"}`,
     `Role: ${content?.headerSubtitle || "MERN Developer"}`,
+    `Chatbot mode: ${content?.chatbotMode || "full"}`,
+    contactStats ? `Website contact database stats: ${contactStats}.` : "",
+    ...knowledgeLines
+  ];
+
+  if (content?.chatbotMode === "qa") {
+    return baseLines.filter(Boolean).join("\n");
+  }
+
+  return [
+    ...baseLines,
     `Hero summary: ${cleanText(content?.heroTitle || "")} ${cleanText(content?.heroBody || "")}`,
     `About: ${cleanText(content?.aboutBody || "")}`,
     `Services: ${serviceLines.join(" | ")}`,
     `Skills: ${skillLines.join(" | ")}`,
     `Contact: ${content?.email || ""} ${content?.phone || ""} ${content?.location || ""}`,
-    contactStats ? `Website contact database stats: ${contactStats}.` : "",
     `Verified social/profile links listed on the website: ${socialLines.join(" | ") || "No public social links listed."}`,
     cvProfileLinks.length ? `Social/profile links found in the public CV: ${cvProfileLinks.join(" | ")}` : "",
+    ...timelineLines,
     ...downloadLines,
     cvText ? `CV text extracted from public CV file: ${truncateText(cvText)}` : "",
-    ...knowledgeLines,
     ...projectLines,
     ...postLines,
     ...proofLines
@@ -397,6 +409,14 @@ router.post("/", async (req, res, next) => {
       return res.status(400).json({ message: "Message is required." });
     }
     const sessionId = cleanSessionId(req.body?.sessionId);
+    const contentSettings = await SiteContent.findOne().select("chatbotEnabled").lean();
+
+    if (contentSettings?.chatbotEnabled === false) {
+      const reply = "The portfolio chatbot is currently turned off. Please use the contact form to reach Hirko Gemechu.";
+      const savedChat = await saveChatExchange(req, { sessionId, question, answer: reply, source: "disabled", history: [] });
+      notifyFirstChatMessage(savedChat);
+      return res.json({ reply, source: "disabled", sessionId });
+    }
 
     const history = Array.isArray(req.body?.history)
       ? req.body.history.slice(-8).map((item) => ({
