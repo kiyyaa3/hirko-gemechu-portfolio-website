@@ -1,4 +1,6 @@
 import express from "express";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { ChatOllama } from "@langchain/ollama";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
@@ -9,8 +11,11 @@ import Testimonial from "../models/Testimonial.js";
 import ChatMessage from "../models/ChatMessage.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { sendChatNotification } from "../services/email.js";
+import { extractDocxText } from "../utils/docxText.js";
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ChatState = Annotation.Root({
   question: Annotation(),
@@ -47,6 +52,15 @@ function messageText(message) {
 function cleanSessionId(value = "") {
   const sessionId = cleanText(value).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80);
   return sessionId || `chat-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function truncateText(value = "", maxLength = 4500) {
+  const text = cleanText(value);
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+}
+
+function extractProfileLinks(value = "") {
+  return Array.from(new Set(String(value).match(/(?:https?:\/\/)?(?:www\.)?(?:linkedin\.com|github\.com|facebook\.com)\/[^\s,;]+/gi) || []));
 }
 
 async function saveChatExchange(req, { sessionId, question, answer, source, history }) {
@@ -90,25 +104,88 @@ async function loadPortfolioContext() {
   ));
   const postLines = posts.map((post) => `Post: ${post.title}. ${cleanText(post.excerpt)}`);
   const proofLines = testimonials.map((item) => `${item.type}: ${item.name}. ${cleanText(item.quote)}`);
+  const serviceLines = (content?.services || []).map((service) => `${service.title}: ${service.description}`);
+  const skillLines = (content?.skillGroups || []).map((group) => `${group.title}: ${(group.items || []).join(", ")}`);
+  const downloadLines = (content?.publicDownloads || []).map((download) => (
+    `Download: ${download.title}. Category: ${download.category}. Description: ${download.description}. File: ${download.fileUrl}.`
+  ));
+  const socialLines = (content?.links || []).filter((link) => link?.url).map((link) => `${link.label}: ${link.url}`);
+  const cvText = await loadCvText(content);
+  const cvProfileLinks = extractProfileLinks(cvText);
 
   return [
     `Name: ${content?.headerTitle || "Hirko Gemechu"}`,
     `Role: ${content?.headerSubtitle || "MERN Developer"}`,
+    `Hero summary: ${cleanText(content?.heroTitle || "")} ${cleanText(content?.heroBody || "")}`,
     `About: ${cleanText(content?.aboutBody || "")}`,
-    `Services: ${(content?.services || []).map((service) => `${service.title}: ${service.description}`).join(" | ")}`,
-    `Skills: ${(content?.skillGroups || []).map((group) => `${group.title}: ${(group.items || []).join(", ")}`).join(" | ")}`,
+    `Services: ${serviceLines.join(" | ")}`,
+    `Skills: ${skillLines.join(" | ")}`,
     `Contact: ${content?.email || ""} ${content?.phone || ""} ${content?.location || ""}`,
+    `Verified social/profile links listed on the website: ${socialLines.join(" | ") || "No public social links listed."}`,
+    cvProfileLinks.length ? `Social/profile links found in the public CV: ${cvProfileLinks.join(" | ")}` : "",
+    ...downloadLines,
+    cvText ? `CV text extracted from public CV file: ${truncateText(cvText)}` : "",
     ...projectLines,
     ...postLines,
     ...proofLines
   ].filter(Boolean).join("\n");
 }
 
+async function loadCvText(content) {
+  const downloads = content?.publicDownloads || [];
+  const cvDownload = downloads.find((download) => (
+    /cv|resume/i.test(`${download?.title || ""} ${download?.category || ""} ${download?.fileUrl || ""}`)
+    && /\.docx($|\?)/i.test(download?.fileUrl || "")
+  ));
+
+  const fileUrl = cvDownload?.fileUrl || "/starter/hirko-gemechu-cv.docx";
+  const filePath = resolvePublicFilePath(fileUrl);
+  return filePath ? extractDocxText(filePath) : "";
+}
+
+function resolvePublicFilePath(fileUrl = "") {
+  const value = String(fileUrl).trim();
+  if (!value || /^(https?:|data:|blob:)/i.test(value)) return "";
+
+  if (value.startsWith("/starter/")) {
+    return path.resolve(__dirname, "../../../client/public", value.slice(1));
+  }
+
+  if (value.startsWith("/uploads/")) {
+    return path.resolve(__dirname, "../..", value.slice(1));
+  }
+
+  return "";
+}
+
 function fallbackAnswer(question, context) {
   const lower = question.toLowerCase();
+  const lines = context.split("\n").filter(Boolean);
+  const cvSummary = extractContextBlock(context, "CV text extracted from public CV file");
+  const websiteSocial = extractContextLine(context, "Verified social/profile links listed on the website");
+  const cvSocial = extractContextLine(context, "Social/profile links found in the public CV");
+  const skills = extractContextLine(context, "Skills");
+  const contact = extractContextLine(context, "Contact");
+  const projects = lines.filter((line) => line.startsWith("Project:")).slice(0, 4);
+  const downloads = lines.filter((line) => line.startsWith("Download:")).slice(0, 4);
 
   if (/\b(hi|hello|helo|hey)\b/.test(lower)) {
     return "Hello. I am Hirko Gemechu's portfolio assistant. You can ask me about Hirko, his skills, projects, services, downloads, or contact details.";
+  }
+
+  if (lower.includes("cv") || lower.includes("resume") || lower.includes("education") || lower.includes("graduate")) {
+    if (cvSummary) {
+      return `From Hirko's public CV: ${truncateText(cvSummary, 900)}`;
+    }
+    return "Hirko's CV is available in the Downloads section. You can ask me about his skills, projects, education, or contact details.";
+  }
+
+  if (lower.includes("social") || lower.includes("linkedin") || lower.includes("github") || lower.includes("facebook") || lower.includes("profile")) {
+    return [
+      websiteSocial ? `Website-listed profile links: ${websiteSocial}.` : "",
+      cvSocial ? `Profile links found in the public CV: ${cvSocial}.` : "",
+      "I only use links listed on this website or in the public CV, so I do not invent social media details."
+    ].filter(Boolean).join(" ");
   }
 
   if (
@@ -122,7 +199,9 @@ function fallbackAnswer(question, context) {
   }
 
   if (lower.includes("contact") || lower.includes("email") || lower.includes("phone")) {
-    return "You can contact Hirko Gemechu from the contact section of this site. The portfolio lists email, phone, and a message form for project or job opportunities.";
+    return contact
+      ? `You can contact Hirko through the contact section. Listed contact details: ${contact}.`
+      : "You can contact Hirko Gemechu from the contact section of this site. The portfolio lists email, phone, and a message form for project or job opportunities.";
   }
 
   if (lower.includes("service") || lower.includes("build") || lower.includes("offer")) {
@@ -130,14 +209,42 @@ function fallbackAnswer(question, context) {
   }
 
   if (lower.includes("project") || lower.includes("work")) {
-    return "Hirko Gemechu builds responsive websites, dashboards, portfolio systems, and practical business tools. You can see the latest project showcase in the Projects section.";
+    return projects.length
+      ? `Here are projects from the portfolio: ${projects.join(" ")}`
+      : "Hirko Gemechu builds responsive websites, dashboards, portfolio systems, and practical business tools. You can see the latest project showcase in the Projects section.";
   }
 
   if (lower.includes("skill") || lower.includes("tech")) {
-    return "Hirko works with React, JavaScript, Node.js, Express, MongoDB, PHP, MySQL, responsive UI, REST APIs, dashboards, and technical support workflows.";
+    return skills
+      ? `Hirko's listed skills include: ${skills}.`
+      : "Hirko works with React, JavaScript, Node.js, Express, MongoDB, PHP, MySQL, responsive UI, REST APIs, dashboards, and support workflows.";
+  }
+
+  if (lower.includes("download") || lower.includes("certificate") || lower.includes("file")) {
+    return downloads.length
+      ? `Available downloads: ${downloads.join(" ")}`
+      : "The Downloads section includes Hirko's CV and certificate files when they are published.";
   }
 
   return `I can answer questions about Hirko Gemechu, projects, skills, services, downloads, and contact details. ${context ? "Ask me about the portfolio or available services." : ""}`;
+}
+
+function extractContextLine(context, label) {
+  const line = context.split("\n").find((item) => item.toLowerCase().startsWith(`${label.toLowerCase()}:`));
+  return line ? line.slice(label.length + 1).trim() : "";
+}
+
+function extractContextBlock(context, label) {
+  const start = `${label}:`;
+  const startIndex = context.indexOf(start);
+  if (startIndex < 0) return "";
+
+  const afterStart = startIndex + start.length;
+  const nextIndex = context.slice(afterStart).search(/\n(?:Project|Post|Download|Verified|Social|Contact|Skills|Services):/);
+  const raw = nextIndex >= 0
+    ? context.slice(afterStart, afterStart + nextIndex)
+    : context.slice(afterStart);
+  return raw.trim();
 }
 
 const graph = new StateGraph(ChatState)
@@ -160,7 +267,8 @@ const graph = new StateGraph(ChatState)
     const response = await model.invoke([
       new SystemMessage([
         "You are Hirko Gemechu's portfolio assistant.",
-        "Answer warmly, briefly, and only from the portfolio context.",
+        "Answer warmly, briefly, and only from the portfolio context, extracted CV text, projects, downloads, testimonials, posts, and listed social/profile links.",
+        "Treat listed social/profile links as cross-check links, but do not claim details from LinkedIn, Facebook, or other social sites unless those details appear in the provided context.",
         "If the question is outside the portfolio, invite the visitor to ask about Hirko's projects, skills, services, or contact details.",
         "Do not invent credentials, prices, private data, or unavailable links.",
         "",
