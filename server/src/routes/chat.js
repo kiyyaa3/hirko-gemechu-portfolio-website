@@ -142,26 +142,8 @@ async function loadPortfolioContext() {
 
 async function loadContactStats() {
   try {
-    const [total, uniqueEmails, statusCounts] = await Promise.all([
-      Message.countDocuments(),
-      Message.distinct("email"),
-      Message.aggregate([
-        { $group: { _id: "$status", count: { $sum: 1 } } }
-      ])
-    ]);
-
-    const statuses = statusCounts.reduce((summary, item) => {
-      summary[item._id || "unknown"] = item.count;
-      return summary;
-    }, {});
-
-    return [
-      `total contact messages ${total}`,
-      `unique visitor emails ${uniqueEmails.length}`,
-      `new ${statuses.new || 0}`,
-      `read ${statuses.read || 0}`,
-      `archived ${statuses.archived || 0}`
-    ].join(", ");
+    const total = await Message.countDocuments();
+    return `total contact messages ${total}`;
   } catch (error) {
     console.warn("Contact stats unavailable for chat context:", error.message);
     return "";
@@ -221,7 +203,7 @@ function fallbackAnswer(question, context) {
 
   if (isContactStatsQuestion(lower)) {
     return contactStats
-      ? `From the website database: ${contactStats}.`
+      ? contactStats
       : "I could not read the contact-message count from the database right now.";
   }
 
@@ -381,7 +363,7 @@ const graph = new StateGraph(ChatState)
       new SystemMessage([
         "You are Hirko Gemechu's portfolio assistant.",
         "Answer warmly, briefly, and only from the portfolio context, extracted CV text, projects, downloads, testimonials, posts, and listed social/profile links.",
-        "You may answer aggregate website contact database stats when asked how many people contacted Hirko, but do not reveal private message contents, emails, phone numbers, or names from those records.",
+        "When asked how many people contacted Hirko, show only the total contact message count from the website database. Do not reveal history, statuses, names, emails, phone numbers, or message contents.",
         "Treat listed social/profile links as cross-check links, but do not claim details from LinkedIn, Facebook, or other social sites unless those details appear in the provided context.",
         "If the question is outside the portfolio, invite the visitor to ask about Hirko's projects, skills, services, or contact details.",
         "Do not invent credentials, prices, private data, or unavailable links.",
