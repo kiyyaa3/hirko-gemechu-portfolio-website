@@ -19,7 +19,11 @@ const quickQuestions = [
 function fallbackReply(text) {
   const question = text.toLowerCase();
 
-  if (question.includes("hello") || question.includes("helo") || question.includes("hi")) {
+  if (question.includes("gpa") || question.includes("cgpa")) {
+    return "Hirko's public CV lists a BSc CGPA of 3.24 from Arba Minch University.";
+  }
+
+  if (/\b(hi|hello|helo|hey)\b/.test(question)) {
     return "Hello. I can help you learn about Hirko Gemechu's projects, skills, services, downloads, and contact details.";
   }
 

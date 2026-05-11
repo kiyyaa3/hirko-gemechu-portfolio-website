@@ -180,6 +180,13 @@ function fallbackAnswer(question, context) {
     return knowledgeAnswer;
   }
 
+  if (lower.includes("gpa") || lower.includes("cgpa")) {
+    const gpa = extractGpa(cvSummary);
+    return gpa
+      ? `Hirko's public CV lists a BSc CGPA of ${gpa} from Arba Minch University.`
+      : "I could not find a GPA in the public portfolio context.";
+  }
+
   if (/\b(hi|hello|helo|hey)\b/.test(lower)) {
     return "Hello. I am Hirko Gemechu's portfolio assistant. You can ask me about Hirko, his skills, projects, services, downloads, or contact details.";
   }
@@ -279,6 +286,11 @@ function parseKnowledgeLine(line) {
 
 function normalizeSearchText(value = "") {
   return String(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function extractGpa(text = "") {
+  const match = text.match(/\b(?:CGPA|GPA)\s*[:,-]?\s*([0-9]+(?:\.[0-9]+)?)/i);
+  return match ? match[1] : "";
 }
 
 function withSource(entry) {
