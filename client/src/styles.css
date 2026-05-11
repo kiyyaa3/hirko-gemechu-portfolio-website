@@ -85,7 +85,7 @@ h3 {
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 100;
   background: rgba(255, 255, 255, 0.88);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(16px);
@@ -111,6 +111,10 @@ main,
   z-index: 1;
 }
 
+.site-header {
+  z-index: 100;
+}
+
 .nav,
 .footer-content,
 .admin-topbar,
@@ -122,6 +126,7 @@ main,
 }
 
 .nav {
+  position: relative;
   justify-content: space-between;
   min-height: 76px;
 }
@@ -1351,6 +1356,7 @@ select:focus {
     top: 76px;
     right: 16px;
     left: 16px;
+    z-index: 120;
     display: none;
     flex-direction: column;
     align-items: stretch;
