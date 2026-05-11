@@ -109,18 +109,15 @@ const shouldServeClient = process.env.NODE_ENV === "production"
   && process.env.SERVE_CLIENT === "true"
   && existsSync(clientIndex);
 
-if (shouldServeClient) {
-  app.use(express.static(clientDist));
-  app.get("*", (_req, res) => {
-    return res.sendFile(clientIndex);
-  });
-}
-
 if (process.env.NODE_ENV === "production" && process.env.SERVE_CLIENT === "true" && !existsSync(clientIndex)) {
   console.warn("SERVE_CLIENT=true but client/dist/index.html is missing. Running API-only mode.");
 }
 
 app.get("/", (_req, res) => {
+  if (shouldServeClient) {
+    return res.sendFile(clientIndex);
+  }
+
   res.json({
     status: "ok",
     app: "hirko-portfolio-api",
@@ -128,6 +125,13 @@ app.get("/", (_req, res) => {
     health: "/api/health"
   });
 });
+
+if (shouldServeClient) {
+  app.use(express.static(clientDist));
+  app.get("*", (_req, res) => {
+    return res.sendFile(clientIndex);
+  });
+}
 
 app.use((error, _req, res, _next) => {
   console.error(error);

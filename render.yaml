@@ -3,7 +3,7 @@ services:
     name: hirko-portfolio-mern
     runtime: node
     plan: free
-    buildCommand: npm install --omit=dev
+    buildCommand: npm install --include=dev && npm --prefix client run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
@@ -12,7 +12,7 @@ services:
       - key: NODE_VERSION
         value: "20.11.0"
       - key: SERVE_CLIENT
-        value: "false"
+        value: "true"
       - key: RATE_LIMIT_MAX
         value: "1000"
       - key: MONGO_URI
@@ -24,7 +24,7 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: CLIENT_URL
-        value: https://hirko-gemechu-birdida.netlify.app,https://kiyyaa3.github.io/hirko-gemechu-portfolio-website
+        value: https://hirko-gemechu-portfolio-website.onrender.com,https://hirko-gemechu-birdida.netlify.app,https://kiyyaa3.github.io/hirko-gemechu-portfolio-website
       - key: MONGO_TIMEOUT_MS
         value: "10000"
       - key: OLLAMA_BASE_URL
