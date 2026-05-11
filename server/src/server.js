@@ -19,6 +19,7 @@ import mediaRoutes from "./routes/media.js";
 import postRoutes from "./routes/posts.js";
 import testimonialRoutes from "./routes/testimonials.js";
 import { connectDb, getDatabaseStatus, isDatabaseReady } from "./db.js";
+import { getEmailConfigStatus } from "./services/email.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,7 +81,8 @@ app.get("/api/health", (_req, res) => {
     status: "ok",
     app: "hirko-portfolio-api",
     node: process.version,
-    database: getDatabaseStatus()
+    database: getDatabaseStatus(),
+    email: getEmailConfigStatus()
   });
 });
 

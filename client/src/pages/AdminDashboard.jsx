@@ -89,7 +89,7 @@ export default function AdminDashboard() {
   const [postForm, setPostForm] = useState(emptyPostForm);
   const [testimonialForm, setTestimonialForm] = useState(emptyTestimonialForm);
   const [passwordForm, setPasswordForm] = useState(emptyPasswordForm);
-  const [contentFiles, setContentFiles] = useState({ heroImage: null, logo: null, downloadFiles: {} });
+  const [contentFiles, setContentFiles] = useState({ heroImage: null, heroVideo: null, logo: null, downloadFiles: {} });
   const [editingProjectId, setEditingProjectId] = useState("");
   const [editingPostId, setEditingPostId] = useState("");
   const [editingTestimonialId, setEditingTestimonialId] = useState("");
@@ -214,6 +214,7 @@ export default function AdminDashboard() {
         "secondaryButtonUrl",
         "availabilityText",
         "heroImageUrl",
+        "heroVideoUrl",
         "logoUrl",
         "aboutTitle",
         "aboutBody",
@@ -241,6 +242,7 @@ export default function AdminDashboard() {
       });
 
       if (contentFiles.heroImage) payload.append("heroImage", contentFiles.heroImage);
+      if (contentFiles.heroVideo) payload.append("heroVideo", contentFiles.heroVideo);
       if (contentFiles.logo) payload.append("logo", contentFiles.logo);
       (content.publicDownloads || []).slice(0, 3).forEach((_download, index) => {
         const file = contentFiles.downloadFiles[index];
@@ -253,7 +255,7 @@ export default function AdminDashboard() {
         body: payload
       });
       setContent(saved);
-      setContentFiles({ heroImage: null, logo: null, downloadFiles: {} });
+      setContentFiles({ heroImage: null, heroVideo: null, logo: null, downloadFiles: {} });
       setStatus("Website content updated.");
       await loadAdminData();
     } catch (err) {
@@ -430,6 +432,7 @@ export default function AdminDashboard() {
   const newMessageCount = messages.filter((message) => message.status === "new").length;
   const publicAssetCount = assets.filter((asset) => asset.public).length;
   const heroPreviewUrl = contentFiles.heroImage ? URL.createObjectURL(contentFiles.heroImage) : assetUrl(content?.heroImageUrl);
+  const heroVideoPreviewUrl = contentFiles.heroVideo ? URL.createObjectURL(contentFiles.heroVideo) : assetUrl(content?.heroVideoUrl);
   const logoPreviewUrl = contentFiles.logo ? URL.createObjectURL(contentFiles.logo) : assetUrl(content?.logoUrl);
 
   return (
@@ -556,6 +559,18 @@ export default function AdminDashboard() {
                 </label>
                 <label className="upload-box">
                   <LayoutTemplate size={22} />
+                  <span>{contentFiles.heroVideo ? `Ready to publish: ${contentFiles.heroVideo.name}` : "Upload local hero video"}</span>
+                  <input
+                    name="heroVideo"
+                    type="file"
+                    accept="video/mp4,video/webm,video/quicktime"
+                    onChange={(event) => setContentFiles({ ...contentFiles, heroVideo: event.target.files?.[0] || null })}
+                  />
+                </label>
+              </div>
+              <div className="two-fields">
+                <label className="upload-box">
+                  <LayoutTemplate size={22} />
                   <span>{contentFiles.logo ? `Ready to publish: ${contentFiles.logo.name}` : "Upload new logo"}</span>
                   <input
                     name="logo"
@@ -570,6 +585,13 @@ export default function AdminDashboard() {
                   <span>{contentFiles.heroImage ? "Selected hero image" : "Current hero image"}</span>
                   {heroPreviewUrl ? <img src={heroPreviewUrl} alt="Current hero" /> : <div className="admin-placeholder">No hero image</div>}
                   <p>{contentFiles.heroImage ? "Click Save & Publish Content to update the Hero Image URL." : (content.heroImageUrl || "No saved hero image URL")}</p>
+                </article>
+                <article className="media-preview-card">
+                  <span>{contentFiles.heroVideo ? "Selected hero video" : "Current hero video"}</span>
+                  {heroVideoPreviewUrl ? (
+                    <video src={heroVideoPreviewUrl} controls muted playsInline />
+                  ) : <div className="admin-placeholder">No hero video</div>}
+                  <p>{contentFiles.heroVideo ? "Click Save & Publish Content to upload this video." : (content.heroVideoUrl || "No saved hero video URL")}</p>
                 </article>
                 <article className="media-preview-card">
                   <span>{contentFiles.logo ? "Selected logo" : "Current logo"}</span>

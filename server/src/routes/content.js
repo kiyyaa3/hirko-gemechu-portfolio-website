@@ -2,7 +2,7 @@ import express from "express";
 import SiteContent from "../models/SiteContent.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { fileUpload } from "../middleware/fileUpload.js";
-import { saveUploadedFile } from "../utils/mediaStore.js";
+import { saveUploadedDiskFile, saveUploadedFile } from "../utils/mediaStore.js";
 
 const router = express.Router();
 
@@ -59,6 +59,7 @@ router.get("/", async (_req, res, next) => {
 
 router.put("/", requireAdmin, fileUpload.fields([
   { name: "heroImage", maxCount: 1 },
+  { name: "heroVideo", maxCount: 1 },
   { name: "logo", maxCount: 1 },
   { name: "downloadFile0", maxCount: 1 },
   { name: "downloadFile1", maxCount: 1 },
@@ -123,6 +124,10 @@ router.put("/", requireAdmin, fileUpload.fields([
 
     if (req.files?.heroImage?.[0]) {
       content.heroImageUrl = await saveUploadedFile(req.files.heroImage[0]);
+    }
+
+    if (req.files?.heroVideo?.[0]) {
+      content.heroVideoUrl = saveUploadedDiskFile(req.files.heroVideo[0]);
     }
 
     if (req.files?.logo?.[0]) {

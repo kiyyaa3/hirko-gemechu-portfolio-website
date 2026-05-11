@@ -8,6 +8,30 @@ function escapeHtml(value = "") {
     .replace(/"/g, "&quot;");
 }
 
+export function getEmailConfigStatus() {
+  const {
+    SMTP_HOST,
+    SMTP_PORT,
+    SMTP_USER,
+    SMTP_PASS,
+    NOTIFY_EMAIL,
+    RESEND_API_KEY
+  } = process.env;
+
+  return {
+    provider: RESEND_API_KEY ? "resend" : "smtp",
+    ready: Boolean((RESEND_API_KEY && NOTIFY_EMAIL) || (SMTP_HOST && SMTP_PORT && SMTP_USER && SMTP_PASS && NOTIFY_EMAIL)),
+    smtp: {
+      host: Boolean(SMTP_HOST),
+      port: Boolean(SMTP_PORT),
+      user: Boolean(SMTP_USER),
+      pass: Boolean(SMTP_PASS)
+    },
+    notifyEmail: Boolean(NOTIFY_EMAIL),
+    resendApiKey: Boolean(RESEND_API_KEY)
+  };
+}
+
 export async function sendContactNotification(contactMessage) {
   const {
     SMTP_HOST,

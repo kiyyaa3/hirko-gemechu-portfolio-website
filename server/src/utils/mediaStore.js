@@ -16,3 +16,8 @@ export async function saveUploadedFile(file) {
   await unlink(file.path).catch(() => {});
   return `/api/media/${storedFile._id}`;
 }
+
+export function saveUploadedDiskFile(file) {
+  if (!file) return "";
+  return `/uploads/${file.filename}`;
+}

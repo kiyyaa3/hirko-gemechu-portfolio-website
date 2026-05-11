@@ -21,7 +21,10 @@ const allowedTypes = new Set([
   "image/jpeg",
   "image/png",
   "image/webp",
-  "image/gif"
+  "image/gif",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime"
 ]);
 
 const storage = multer.diskStorage({
@@ -47,6 +50,6 @@ export const fileUpload = multer({
   storage,
   fileFilter: allowedFile,
   limits: {
-    fileSize: 15 * 1024 * 1024
+    fileSize: 80 * 1024 * 1024
   }
 });

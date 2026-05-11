@@ -1065,7 +1065,8 @@ select:focus {
   font-weight: 800;
 }
 
-.media-preview-card img {
+.media-preview-card img,
+.media-preview-card video {
   width: 100%;
   min-height: 170px;
   height: 230px;
@@ -1559,7 +1560,8 @@ select:focus {
   .project-icon,
   .blog-card img,
   .testimonial-card img,
-  .media-preview-card img {
+  .media-preview-card img,
+  .media-preview-card video {
     height: 190px;
   }
 
