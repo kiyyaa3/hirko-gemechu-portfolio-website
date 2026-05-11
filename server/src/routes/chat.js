@@ -9,6 +9,7 @@ import Project from "../models/Project.js";
 import Post from "../models/Post.js";
 import Testimonial from "../models/Testimonial.js";
 import ChatMessage from "../models/ChatMessage.js";
+import Message from "../models/Message.js";
 import KnowledgeEntry from "../models/KnowledgeEntry.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { sendChatNotification } from "../services/email.js";
@@ -93,12 +94,13 @@ function notifyFirstChatMessage(savedChat) {
 }
 
 async function loadPortfolioContext() {
-  const [content, projects, posts, testimonials, knowledgeEntries] = await Promise.all([
+  const [content, projects, posts, testimonials, knowledgeEntries, contactStats] = await Promise.all([
     SiteContent.findOne().lean(),
     Project.find().sort({ sortOrder: 1, createdAt: -1 }).limit(8).lean(),
     Post.find({ published: true }).sort({ sortOrder: 1, publishedAt: -1 }).limit(5).lean(),
     Testimonial.find({ public: true }).sort({ sortOrder: 1, createdAt: -1 }).limit(5).lean(),
-    KnowledgeEntry.find({ public: true }).sort({ sortOrder: 1, createdAt: -1 }).limit(30).lean()
+    KnowledgeEntry.find({ public: true }).sort({ sortOrder: 1, createdAt: -1 }).limit(30).lean(),
+    loadContactStats()
   ]);
 
   const projectLines = projects.map((project) => (
@@ -126,6 +128,7 @@ async function loadPortfolioContext() {
     `Services: ${serviceLines.join(" | ")}`,
     `Skills: ${skillLines.join(" | ")}`,
     `Contact: ${content?.email || ""} ${content?.phone || ""} ${content?.location || ""}`,
+    contactStats ? `Website contact database stats: ${contactStats}.` : "",
     `Verified social/profile links listed on the website: ${socialLines.join(" | ") || "No public social links listed."}`,
     cvProfileLinks.length ? `Social/profile links found in the public CV: ${cvProfileLinks.join(" | ")}` : "",
     ...downloadLines,
@@ -135,6 +138,34 @@ async function loadPortfolioContext() {
     ...postLines,
     ...proofLines
   ].filter(Boolean).join("\n");
+}
+
+async function loadContactStats() {
+  try {
+    const [total, uniqueEmails, statusCounts] = await Promise.all([
+      Message.countDocuments(),
+      Message.distinct("email"),
+      Message.aggregate([
+        { $group: { _id: "$status", count: { $sum: 1 } } }
+      ])
+    ]);
+
+    const statuses = statusCounts.reduce((summary, item) => {
+      summary[item._id || "unknown"] = item.count;
+      return summary;
+    }, {});
+
+    return [
+      `total contact messages ${total}`,
+      `unique visitor emails ${uniqueEmails.length}`,
+      `new ${statuses.new || 0}`,
+      `read ${statuses.read || 0}`,
+      `archived ${statuses.archived || 0}`
+    ].join(", ");
+  } catch (error) {
+    console.warn("Contact stats unavailable for chat context:", error.message);
+    return "";
+  }
 }
 
 async function loadCvText(content) {
@@ -172,6 +203,7 @@ function fallbackAnswer(question, context) {
   const cvSocial = extractContextLine(context, "Social/profile links found in the public CV");
   const skills = extractContextLine(context, "Skills");
   const contact = extractContextLine(context, "Contact");
+  const contactStats = extractContextLine(context, "Website contact database stats");
   const projects = lines.filter((line) => line.startsWith("Project:")).slice(0, 4);
   const downloads = lines.filter((line) => line.startsWith("Download:")).slice(0, 4);
   const knowledgeAnswer = findKnowledgeAnswer(question, lines);
@@ -185,6 +217,12 @@ function fallbackAnswer(question, context) {
     return gpa
       ? `Hirko's public CV lists a BSc CGPA of ${gpa} from Arba Minch University.`
       : "I could not find a GPA in the public portfolio context.";
+  }
+
+  if (isContactStatsQuestion(lower)) {
+    return contactStats
+      ? `From the website database: ${contactStats}.`
+      : "I could not read the contact-message count from the database right now.";
   }
 
   if (/\b(hi|hello|helo|hey)\b/.test(lower)) {
@@ -293,6 +331,13 @@ function extractGpa(text = "") {
   return match ? match[1] : "";
 }
 
+function isContactStatsQuestion(lower = "") {
+  const wantsCount = /\b(how many|count|total|number)\b/.test(lower);
+  const mentionsPeople = /\b(man|men|person|people|visitor|customer|client|user|users|contacts?)\b/.test(lower);
+  const mentionsContact = /\b(contact|message|messaged|submit|submitted|through this website|through this system)\b/.test(lower);
+  return wantsCount && mentionsPeople && mentionsContact;
+}
+
 function withSource(entry) {
   return entry.sourceUrl ? `${entry.answer} Source: ${entry.sourceUrl}` : entry.answer;
 }
@@ -336,6 +381,7 @@ const graph = new StateGraph(ChatState)
       new SystemMessage([
         "You are Hirko Gemechu's portfolio assistant.",
         "Answer warmly, briefly, and only from the portfolio context, extracted CV text, projects, downloads, testimonials, posts, and listed social/profile links.",
+        "You may answer aggregate website contact database stats when asked how many people contacted Hirko, but do not reveal private message contents, emails, phone numbers, or names from those records.",
         "Treat listed social/profile links as cross-check links, but do not claim details from LinkedIn, Facebook, or other social sites unless those details appear in the provided context.",
         "If the question is outside the portfolio, invite the visitor to ask about Hirko's projects, skills, services, or contact details.",
         "Do not invent credentials, prices, private data, or unavailable links.",
