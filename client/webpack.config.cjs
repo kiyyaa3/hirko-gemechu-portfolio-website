@@ -5,7 +5,8 @@ const webpack = require("webpack");
 
 module.exports = (_env, argv) => {
   const isProduction = argv.mode === "production";
-  const apiUrl = process.env.VITE_API_URL || (isProduction ? "" : "http://localhost:5000");
+  const productionApiUrl = "https://hirko-gemechu-portfolio-website.onrender.com";
+  const apiUrl = process.env.VITE_API_URL || (isProduction ? productionApiUrl : "http://localhost:5000");
   const basePath = process.env.BASE_PATH || "";
   const publicPath = process.env.PUBLIC_PATH || "/";
 
