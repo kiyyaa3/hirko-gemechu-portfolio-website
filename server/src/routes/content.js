@@ -14,6 +14,7 @@ async function getContentDocument() {
   const defaults = new SiteContent();
   [
     "heroImageUrl",
+    "heroVideoUrl",
     "announcementText",
     "primaryButtonLabel",
     "primaryButtonUrl",
@@ -79,6 +80,7 @@ router.put("/", requireAdmin, fileUpload.fields([
       "heroTitle",
       "heroBody",
       "heroImageUrl",
+      "heroVideoUrl",
       "announcementText",
       "primaryButtonLabel",
       "primaryButtonUrl",

@@ -90,6 +90,10 @@ const siteContentSchema = new mongoose.Schema(
       type: String,
       default: "/starter/hirko-optimized.jpg"
     },
+    heroVideoUrl: {
+      type: String,
+      default: "https://videos.pexels.com/video-files/7989672/7989672-hd_1920_1080_25fps.mp4"
+    },
     heroStats: {
       type: [statSchema],
       default: [

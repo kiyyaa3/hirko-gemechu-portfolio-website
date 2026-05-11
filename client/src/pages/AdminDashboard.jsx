@@ -537,10 +537,12 @@ export default function AdminDashboard() {
                   <input value={content.heroImageUrl || ""} onChange={(event) => setContent({ ...content, heroImageUrl: event.target.value })} />
                 </div>
                 <div>
-                  <label>Logo URL</label>
-                  <input value={content.logoUrl || ""} onChange={(event) => setContent({ ...content, logoUrl: event.target.value })} />
+                  <label>Hero Video URL</label>
+                  <input value={content.heroVideoUrl || ""} onChange={(event) => setContent({ ...content, heroVideoUrl: event.target.value })} placeholder="https://...mp4" />
                 </div>
               </div>
+              <label>Logo URL</label>
+              <input value={content.logoUrl || ""} onChange={(event) => setContent({ ...content, logoUrl: event.target.value })} />
               <div className="two-fields">
                 <label className="upload-box">
                   <LayoutTemplate size={22} />

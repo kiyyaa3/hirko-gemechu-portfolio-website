@@ -94,6 +94,7 @@ const defaultSite = {
   secondaryButtonUrl: "#contact",
   availabilityText: "Open to work",
   heroImageUrl: "/starter/hirko-optimized.jpg",
+  heroVideoUrl: "https://videos.pexels.com/video-files/7989672/7989672-hd_1920_1080_25fps.mp4",
   heroStats,
   logoUrl: "/starter/logo.png",
   aboutTitle: "Full-stack development with practical support experience.",
@@ -153,6 +154,7 @@ export default function App() {
 
   const site = { ...defaultSite, ...(content || {}) };
   const heroImage = assetUrl(site.heroImageUrl || defaultSite.heroImageUrl);
+  const heroVideo = assetUrl(site.heroVideoUrl || defaultSite.heroVideoUrl);
   const visibleProjects = projects.length ? projects : fallbackProjects;
   const contentDownloads = site.publicDownloads?.length ? site.publicDownloads : fallbackAssets;
   const publicAssets = [
@@ -188,6 +190,12 @@ export default function App() {
       <Header logoUrl={assetUrl(site.logoUrl)} />
       <main>
         <section className="hero" id="home">
+          {heroVideo ? (
+            <video className="hero-video" autoPlay muted loop playsInline poster={heroImage} aria-hidden="true">
+              <source src={heroVideo} type="video/mp4" />
+            </video>
+          ) : null}
+          <div className="hero-overlay" aria-hidden="true"></div>
           <div className="container hero-grid">
             <div className="hero-copy">
               {site.announcementText ? <div className="announcement-bar">{site.announcementText}</div> : null}
