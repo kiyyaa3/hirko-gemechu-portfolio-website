@@ -65,11 +65,22 @@ const emptyPasswordForm = {
   confirmPassword: ""
 };
 
+const emptyKnowledgeForm = {
+  question: "",
+  answer: "",
+  category: "General",
+  sourceUrl: "",
+  aliases: "",
+  public: true,
+  sortOrder: 0
+};
+
 const adminSections = [
   { id: "content", label: "Content", icon: LayoutTemplate },
   { id: "projects", label: "Projects", icon: FolderKanban },
   { id: "files", label: "Files", icon: FileUp },
   { id: "posts", label: "Blog", icon: Newspaper },
+  { id: "knowledge", label: "Q&A", icon: MessageSquareQuote },
   { id: "testimonials", label: "Proof", icon: MessageSquareQuote },
   { id: "messages", label: "Messages", icon: Inbox },
   { id: "security", label: "Security", icon: KeyRound }
@@ -83,16 +94,19 @@ export default function AdminDashboard() {
   const [chatMessages, setChatMessages] = useState([]);
   const [posts, setPosts] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
+  const [knowledgeEntries, setKnowledgeEntries] = useState([]);
   const [content, setContent] = useState(null);
   const [projectForm, setProjectForm] = useState(emptyProjectForm);
   const [fileForm, setFileForm] = useState(emptyFileForm);
   const [postForm, setPostForm] = useState(emptyPostForm);
   const [testimonialForm, setTestimonialForm] = useState(emptyTestimonialForm);
   const [passwordForm, setPasswordForm] = useState(emptyPasswordForm);
+  const [knowledgeForm, setKnowledgeForm] = useState(emptyKnowledgeForm);
   const [contentFiles, setContentFiles] = useState({ heroImage: null, heroVideo: null, logo: null, downloadFiles: {} });
   const [editingProjectId, setEditingProjectId] = useState("");
   const [editingPostId, setEditingPostId] = useState("");
   const [editingTestimonialId, setEditingTestimonialId] = useState("");
+  const [editingKnowledgeId, setEditingKnowledgeId] = useState("");
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
 
@@ -109,14 +123,15 @@ export default function AdminDashboard() {
   }, []);
 
   async function loadAdminData() {
-    const [projectData, assetData, messageData, chatData, contentData, postData, testimonialData] = await Promise.all([
+    const [projectData, assetData, messageData, chatData, contentData, postData, testimonialData, knowledgeData] = await Promise.all([
       apiRequest("/api/projects"),
       apiRequest("/api/assets?all=true"),
       apiRequest("/api/messages", { headers: authHeaders() }),
       apiRequest("/api/chat", { headers: authHeaders() }),
       apiRequest("/api/content"),
       apiRequest("/api/posts?all=true"),
-      apiRequest("/api/testimonials?all=true")
+      apiRequest("/api/testimonials?all=true"),
+      apiRequest("/api/knowledge?all=true", { headers: authHeaders() })
     ]);
 
     setProjects(projectData);
@@ -126,6 +141,7 @@ export default function AdminDashboard() {
     setContent(contentData);
     setPosts(postData);
     setTestimonials(testimonialData);
+    setKnowledgeEntries(knowledgeData);
   }
 
   function clearFeedback() {
@@ -146,6 +162,11 @@ export default function AdminDashboard() {
   function resetTestimonialForm() {
     setEditingTestimonialId("");
     setTestimonialForm(emptyTestimonialForm);
+  }
+
+  function resetKnowledgeForm() {
+    setEditingKnowledgeId("");
+    setKnowledgeForm(emptyKnowledgeForm);
   }
 
   function startProjectEdit(project) {
@@ -193,6 +214,21 @@ export default function AdminDashboard() {
       file: null
     });
     setActiveSection("testimonials");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function startKnowledgeEdit(entry) {
+    setEditingKnowledgeId(entry._id);
+    setKnowledgeForm({
+      question: entry.question || "",
+      answer: entry.answer || "",
+      category: entry.category || "General",
+      sourceUrl: entry.sourceUrl || "",
+      aliases: entry.aliases?.join(", ") || "",
+      public: Boolean(entry.public),
+      sortOrder: entry.sortOrder || 0
+    });
+    setActiveSection("knowledge");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -332,6 +368,25 @@ export default function AdminDashboard() {
 
       setStatus(editingTestimonialId ? "Testimonial updated." : "Testimonial added.");
       resetTestimonialForm();
+      await loadAdminData();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function saveKnowledge(event) {
+    event.preventDefault();
+    clearFeedback();
+
+    try {
+      await apiRequest(editingKnowledgeId ? `/api/knowledge/${editingKnowledgeId}` : "/api/knowledge", {
+        method: editingKnowledgeId ? "PUT" : "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(knowledgeForm)
+      });
+
+      setStatus(editingKnowledgeId ? "Q&A entry updated." : "Q&A entry added.");
+      resetKnowledgeForm();
       await loadAdminData();
     } catch (err) {
       setError(err.message);
@@ -1058,6 +1113,48 @@ export default function AdminDashboard() {
             </form>
           )}
 
+          {activeSection === "knowledge" && (
+            <form className="admin-form admin-panel" onSubmit={saveKnowledge}>
+              <div className="form-heading">
+                {editingKnowledgeId ? <Save size={24} /> : <MessageSquareQuote size={24} />}
+                <div>
+                  <h2>{editingKnowledgeId ? "Edit Chatbot Q&A" : "Add Chatbot Q&A"}</h2>
+                  <p>Add exact answers the chatbot should use for customer questions, social links, CV details, services, pricing notes, or policies.</p>
+                </div>
+              </div>
+              <label>Question</label>
+              <input value={knowledgeForm.question} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, question: event.target.value })} required />
+              <label>Answer</label>
+              <textarea rows="6" value={knowledgeForm.answer} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, answer: event.target.value })} required />
+              <div className="two-fields">
+                <div>
+                  <label>Category</label>
+                  <input value={knowledgeForm.category} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, category: event.target.value })} placeholder="Social, CV, Services..." />
+                </div>
+                <div>
+                  <label>Source URL</label>
+                  <input value={knowledgeForm.sourceUrl} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, sourceUrl: event.target.value })} placeholder="https://..." />
+                </div>
+              </div>
+              <label>Related Questions / Aliases</label>
+              <input value={knowledgeForm.aliases} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, aliases: event.target.value })} placeholder="Comma-separated questions visitors may ask" />
+              <div className="two-fields">
+                <label className="check-row">
+                  <input type="checkbox" checked={knowledgeForm.public} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, public: event.target.checked })} />
+                  Public for chatbot
+                </label>
+                <div>
+                  <label>Sort Order</label>
+                  <input type="number" value={knowledgeForm.sortOrder} onChange={(event) => setKnowledgeForm({ ...knowledgeForm, sortOrder: event.target.value })} />
+                </div>
+              </div>
+              <div className="form-buttons">
+                <button className="btn primary" type="submit">{editingKnowledgeId ? "Save Q&A" : "Add Q&A"}</button>
+                {editingKnowledgeId ? <button className="btn secondary" type="button" onClick={resetKnowledgeForm}>Cancel</button> : null}
+              </div>
+            </form>
+          )}
+
           {activeSection === "security" && (
             <form className="admin-form admin-panel" onSubmit={changePassword}>
               <div className="form-heading">
@@ -1166,6 +1263,27 @@ export default function AdminDashboard() {
                     </div>
                   </article>
                 ))}
+              </div>
+            </>
+          )}
+
+          {activeSection === "knowledge" && (
+            <>
+              <h2>Chatbot Knowledge Q&A</h2>
+              <div className="admin-projects">
+                {knowledgeEntries.length ? knowledgeEntries.map((entry) => (
+                  <article className="message-card" key={entry._id}>
+                    <p className="eyebrow">{entry.category} | {entry.public ? "Public" : "Private"}</p>
+                    <h3>{entry.question}</h3>
+                    <p>{entry.answer}</p>
+                    {entry.aliases?.length ? <p>Related: {entry.aliases.join(", ")}</p> : null}
+                    {entry.sourceUrl ? <div className="message-meta"><a href={entry.sourceUrl} target="_blank" rel="noreferrer">{entry.sourceUrl}</a></div> : null}
+                    <div className="project-controls">
+                      <button className="btn secondary" type="button" onClick={() => startKnowledgeEdit(entry)}>Edit</button>
+                      <button className="btn danger" type="button" onClick={() => removeItem(`/api/knowledge/${entry._id}`, "Q&A entry deleted.", "Delete this chatbot Q&A?")}><Trash2 size={16} /> Delete</button>
+                    </div>
+                  </article>
+                )) : <p className="status-text">No chatbot Q&A entries yet. Add answers for customer questions, social profiles, services, or CV details.</p>}
               </div>
             </>
           )}

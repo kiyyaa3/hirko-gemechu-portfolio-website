@@ -18,6 +18,7 @@ import messageRoutes from "./routes/messages.js";
 import mediaRoutes from "./routes/media.js";
 import postRoutes from "./routes/posts.js";
 import testimonialRoutes from "./routes/testimonials.js";
+import knowledgeRoutes from "./routes/knowledge.js";
 import { connectDb, getDatabaseStatus, isDatabaseReady } from "./db.js";
 import { getEmailConfigStatus } from "./services/email.js";
 
@@ -106,6 +107,7 @@ app.use("/api/media", mediaRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/testimonials", testimonialRoutes);
+app.use("/api/knowledge", knowledgeRoutes);
 
 const clientDist = path.resolve(__dirname, "../../client/dist");
 const clientIndex = path.join(clientDist, "index.html");

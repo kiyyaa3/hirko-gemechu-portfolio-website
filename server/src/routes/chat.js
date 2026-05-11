@@ -9,6 +9,7 @@ import Project from "../models/Project.js";
 import Post from "../models/Post.js";
 import Testimonial from "../models/Testimonial.js";
 import ChatMessage from "../models/ChatMessage.js";
+import KnowledgeEntry from "../models/KnowledgeEntry.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { sendChatNotification } from "../services/email.js";
 import { extractDocxText } from "../utils/docxText.js";
@@ -92,11 +93,12 @@ function notifyFirstChatMessage(savedChat) {
 }
 
 async function loadPortfolioContext() {
-  const [content, projects, posts, testimonials] = await Promise.all([
+  const [content, projects, posts, testimonials, knowledgeEntries] = await Promise.all([
     SiteContent.findOne().lean(),
     Project.find().sort({ sortOrder: 1, createdAt: -1 }).limit(8).lean(),
     Post.find({ published: true }).sort({ sortOrder: 1, publishedAt: -1 }).limit(5).lean(),
-    Testimonial.find({ public: true }).sort({ sortOrder: 1, createdAt: -1 }).limit(5).lean()
+    Testimonial.find({ public: true }).sort({ sortOrder: 1, createdAt: -1 }).limit(5).lean(),
+    KnowledgeEntry.find({ public: true }).sort({ sortOrder: 1, createdAt: -1 }).limit(30).lean()
   ]);
 
   const projectLines = projects.map((project) => (
@@ -104,6 +106,9 @@ async function loadPortfolioContext() {
   ));
   const postLines = posts.map((post) => `Post: ${post.title}. ${cleanText(post.excerpt)}`);
   const proofLines = testimonials.map((item) => `${item.type}: ${item.name}. ${cleanText(item.quote)}`);
+  const knowledgeLines = knowledgeEntries.map((entry) => (
+    `Knowledge Q&A: ${entry.question}. Answer: ${cleanText(entry.answer)}${entry.sourceUrl ? ` Source: ${entry.sourceUrl}` : ""}${entry.aliases?.length ? ` Related questions: ${entry.aliases.join(", ")}` : ""}`
+  ));
   const serviceLines = (content?.services || []).map((service) => `${service.title}: ${service.description}`);
   const skillLines = (content?.skillGroups || []).map((group) => `${group.title}: ${(group.items || []).join(", ")}`);
   const downloadLines = (content?.publicDownloads || []).map((download) => (
@@ -125,6 +130,7 @@ async function loadPortfolioContext() {
     cvProfileLinks.length ? `Social/profile links found in the public CV: ${cvProfileLinks.join(" | ")}` : "",
     ...downloadLines,
     cvText ? `CV text extracted from public CV file: ${truncateText(cvText)}` : "",
+    ...knowledgeLines,
     ...projectLines,
     ...postLines,
     ...proofLines
@@ -168,6 +174,11 @@ function fallbackAnswer(question, context) {
   const contact = extractContextLine(context, "Contact");
   const projects = lines.filter((line) => line.startsWith("Project:")).slice(0, 4);
   const downloads = lines.filter((line) => line.startsWith("Download:")).slice(0, 4);
+  const knowledgeAnswer = findKnowledgeAnswer(question, lines);
+
+  if (knowledgeAnswer) {
+    return knowledgeAnswer;
+  }
 
   if (/\b(hi|hello|helo|hey)\b/.test(lower)) {
     return "Hello. I am Hirko Gemechu's portfolio assistant. You can ask me about Hirko, his skills, projects, services, downloads, or contact details.";
@@ -227,6 +238,51 @@ function fallbackAnswer(question, context) {
   }
 
   return `I can answer questions about Hirko Gemechu, projects, skills, services, downloads, and contact details. ${context ? "Ask me about the portfolio or available services." : ""}`;
+}
+
+function findKnowledgeAnswer(question, lines) {
+  const normalizedQuestion = normalizeSearchText(question);
+  const entries = lines
+    .filter((line) => line.startsWith("Knowledge Q&A:"))
+    .map(parseKnowledgeLine)
+    .filter(Boolean);
+
+  const exact = entries.find((entry) => (
+    normalizeSearchText(entry.question) === normalizedQuestion
+    || entry.aliases.some((alias) => normalizeSearchText(alias) === normalizedQuestion)
+  ));
+  if (exact) return withSource(exact);
+
+  const scored = entries
+    .map((entry) => {
+      const haystack = normalizeSearchText([entry.question, ...entry.aliases].join(" "));
+      const score = normalizedQuestion.split(" ").filter((word) => word.length > 2 && haystack.includes(word)).length;
+      return { entry, score };
+    })
+    .filter((item) => item.score >= 2)
+    .sort((a, b) => b.score - a.score);
+
+  return scored[0] ? withSource(scored[0].entry) : "";
+}
+
+function parseKnowledgeLine(line) {
+  const match = line.match(/^Knowledge Q&A: (.*?)\. Answer: (.*?)(?: Source: (.*?))?(?: Related questions: (.*))?$/);
+  if (!match) return null;
+
+  return {
+    question: match[1] || "",
+    answer: match[2] || "",
+    sourceUrl: match[3] || "",
+    aliases: (match[4] || "").split(",").map((item) => item.trim()).filter(Boolean)
+  };
+}
+
+function normalizeSearchText(value = "") {
+  return String(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function withSource(entry) {
+  return entry.sourceUrl ? `${entry.answer} Source: ${entry.sourceUrl}` : entry.answer;
 }
 
 function extractContextLine(context, label) {
